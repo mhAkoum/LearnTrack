@@ -1,0 +1,153 @@
+//
+//  AuthViewModel.swift
+//  LearnTrack
+//
+//  Created on 04/12/2025.
+//
+
+import Foundation
+import SwiftUI
+import Combine
+
+@MainActor
+class AuthViewModel: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var currentUser: User?
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    private let authService = AuthService.shared
+    
+    init() {
+        Task {
+            await checkAuthStatus()
+        }
+    }
+    
+    /// Check authentication status on app launch
+    func checkAuthStatus() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            // Try to restore session from keychain
+            try await authService.restoreSession()
+            
+            // Get current user
+            if let user = try await authService.getCurrentUser() {
+                self.currentUser = user
+                self.isAuthenticated = true
+            } else {
+                self.isAuthenticated = false
+                self.currentUser = nil
+            }
+        } catch {
+            // Not authenticated or session expired
+            self.isAuthenticated = false
+            self.currentUser = nil
+        }
+        
+        isLoading = false
+    }
+    
+    /// Sign in with email and password
+    func login(email: String, password: String) async {
+        isLoading = true
+        errorMessage = nil
+        
+        // Validate input
+        guard !email.isEmpty, !password.isEmpty else {
+            errorMessage = "Please enter both email and password"
+            isLoading = false
+            return
+        }
+        
+        guard email.isValidEmail else {
+            errorMessage = "Please enter a valid email address"
+            isLoading = false
+            return
+        }
+        
+        do {
+            try await authService.signIn(email: email, password: password)
+            
+            // Get user info after successful login
+            if let user = try await authService.getCurrentUser() {
+                self.currentUser = user
+                self.isAuthenticated = true
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            isAuthenticated = false
+            currentUser = nil
+        }
+        
+        isLoading = false
+    }
+    
+    /// Sign up with email and password
+    func signUp(email: String, password: String) async {
+        isLoading = true
+        errorMessage = nil
+        
+        // Validate input
+        guard !email.isEmpty, !password.isEmpty else {
+            errorMessage = "Please enter both email and password"
+            isLoading = false
+            return
+        }
+        
+        guard email.isValidEmail else {
+            errorMessage = "Please enter a valid email address"
+            isLoading = false
+            return
+        }
+        
+        guard password.count >= 6 else {
+            errorMessage = "Password must be at least 6 characters"
+            isLoading = false
+            return
+        }
+        
+        do {
+            try await authService.signUp(email: email, password: password)
+            
+            // After sign up, try to get user (if auto-confirm is enabled)
+            if let user = try await authService.getCurrentUser() {
+                self.currentUser = user
+                self.isAuthenticated = true
+            } else {
+                // User needs to confirm email
+                errorMessage = "Please check your email to confirm your account"
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            isAuthenticated = false
+            currentUser = nil
+        }
+        
+        isLoading = false
+    }
+    
+    /// Sign out
+    func logout() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await authService.signOut()
+            self.isAuthenticated = false
+            self.currentUser = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isLoading = false
+    }
+    
+    /// Clear error message
+    func clearError() {
+        errorMessage = nil
+    }
+}
+
