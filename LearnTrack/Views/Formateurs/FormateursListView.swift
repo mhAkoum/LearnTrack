@@ -10,6 +10,7 @@ import SwiftUI
 struct FormateursListView: View {
     @StateObject private var viewModel = FormateursViewModel()
     @State private var showingAddFormateur = false
+    @State private var showingError = false
     
     var body: some View {
         NavigationView {
@@ -54,11 +55,25 @@ struct FormateursListView: View {
                 FormateurFormView(viewModel: viewModel, formateur: nil)
             }
             .task {
+                // Test connection first
+                await SupabaseService.shared.testConnection()
+                // Then fetch formateurs
                 await viewModel.fetchFormateurs()
             }
-            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+            .onChange(of: viewModel.errorMessage) { oldValue, newValue in
+                if newValue != nil && !showingError {
+                    // Add small delay to prevent presentation conflicts
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        showingError = true
+                    }
+                } else if newValue == nil {
+                    showingError = false
+                }
+            }
+            .alert("Error", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
+                    showingError = false
                 }
             } message: {
                 if let error = viewModel.errorMessage {

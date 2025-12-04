@@ -10,6 +10,7 @@ import SwiftUI
 struct SessionsListView: View {
     @StateObject private var viewModel = SessionsViewModel()
     @State private var showingAddSession = false
+    @State private var showingError = false
     
     var body: some View {
         NavigationView {
@@ -58,9 +59,20 @@ struct SessionsListView: View {
             .task {
                 await viewModel.fetchSessions()
             }
-            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+            .onChange(of: viewModel.errorMessage) { oldValue, newValue in
+                if newValue != nil && !showingError {
+                    // Add small delay to prevent presentation conflicts
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        showingError = true
+                    }
+                } else if newValue == nil {
+                    showingError = false
+                }
+            }
+            .alert("Error", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
+                    showingError = false
                 }
             } message: {
                 if let error = viewModel.errorMessage {

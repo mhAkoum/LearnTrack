@@ -163,10 +163,11 @@ struct Phase1TestView: View {
     
     private func testFormateurModel() -> TestResult {
         let formateur = Formateur(
+            id: 1,
             nom: "Doe",
             prenom: "John",
             email: "john@example.com",
-            type: "interne"
+            exterieur: false  // false = interne, true = externe
         )
         
         let isValid = !formateur.fullName.isEmpty && formateur.isInterne

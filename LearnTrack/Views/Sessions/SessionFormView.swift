@@ -94,6 +94,7 @@ struct SessionFormView: View {
             } message: {
                 Text(errorMessage)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
     

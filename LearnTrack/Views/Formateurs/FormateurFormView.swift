@@ -94,6 +94,7 @@ struct FormateurFormView: View {
             } message: {
                 Text(errorMessage)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
     
@@ -102,9 +103,9 @@ struct FormateurFormView: View {
         prenom = formateur.prenom
         email = formateur.email ?? ""
         telephone = formateur.telephone ?? ""
-        type = formateur.type
-        specialites = formateur.specialites ?? ""
-        notes = formateur.notes ?? ""
+        type = formateur.type  // Use computed property
+        specialites = formateur.specialites ?? ""  // Use computed property
+        notes = formateur.notes ?? ""  // Use computed property
     }
     
     private func saveFormateur() {
@@ -123,14 +124,13 @@ struct FormateurFormView: View {
         
         // Create or update formateur
         let formateurToSave = Formateur(
-            id: formateur?.id ?? UUID(),
+            id: formateur?.id ?? 0,  // 0 for new records, database will auto-increment
             nom: nom,
             prenom: prenom,
             email: email.isEmpty ? nil : email,
             telephone: telephone.isEmpty ? nil : telephone,
-            type: type,
-            specialites: specialites.isEmpty ? nil : specialites,
-            notes: notes.isEmpty ? nil : notes
+            specialite: specialites.isEmpty ? nil : specialites,
+            exterieur: type == "externe"  // Convert type string to boolean
         )
         
         Task {

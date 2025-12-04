@@ -11,6 +11,11 @@ import SwiftUI
 struct LearnTrackApp: App {
     @StateObject private var authViewModel = AuthViewModel()
     
+    init() {
+        // Configure Supabase on app launch
+        SupabaseService.shared.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             Group {
@@ -23,6 +28,8 @@ struct LearnTrackApp: App {
                 }
             }
             .task {
+                // Test database connection on app launch
+                await SupabaseService.shared.testConnection()
                 // Check auth status on app launch
                 await authViewModel.checkAuthStatus()
             }

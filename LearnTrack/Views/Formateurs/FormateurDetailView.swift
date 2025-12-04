@@ -199,11 +199,12 @@ struct ContactActionButton: View {
     NavigationView {
         FormateurDetailView(
             formateur: Formateur(
+                id: 1,
                 nom: "Doe",
                 prenom: "John",
                 email: "john@example.com",
                 telephone: "+33123456789",
-                type: "interne"
+                exterieur: false
             ),
             viewModel: FormateursViewModel()
         )
