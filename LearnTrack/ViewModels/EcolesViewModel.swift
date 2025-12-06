@@ -62,6 +62,9 @@ class EcolesViewModel: ObservableObject {
             #if DEBUG
             print("❌ Error fetching ecoles: \(error)")
             print("   Error description: \(errorDescription)")
+            if let decodingError = error as? DecodingError {
+                print("   Decoding error details: \(decodingError)")
+            }
             #endif
             
             // Check if it's a table not found error
@@ -72,10 +75,16 @@ class EcolesViewModel: ObservableObject {
                 self.errorMessage = "❌ Table 'ecoles' not found!\n\nPlease create it in Supabase:\n1. Go to SQL Editor\n2. Run the script from COMPLETE_DATABASE_SETUP.md"
             } else if errorDescription.contains("couldn't be read") || 
                       errorDescription.contains("correct format") ||
-                      errorDescription.contains("decoding") {
+                      errorDescription.contains("decoding") ||
+                      error is DecodingError {
                 self.ecoles = []
+                #if DEBUG
                 print("⚠️ Warning: Could not decode ecoles. Table might be empty or have wrong structure.")
-                self.errorMessage = "Table structure mismatch. Check column names match the model."
+                if let decodingError = error as? DecodingError {
+                    print("   Decoding error: \(decodingError)")
+                }
+                #endif
+                self.errorMessage = "Table structure mismatch. Check column names match the model.\n\nExpected columns:\n- id (uuid)\n- nom (text)\n- contact_nom, contact_email, contact_telephone, adresse, notes (text, nullable)\n- created_at, updated_at (timestamptz, nullable)"
             } else {
                 self.errorMessage = "Failed to load ecoles: \(errorDescription)\n\nCheck:\n- Internet connection\n- Supabase project is active\n- Tables exist in database"
             }

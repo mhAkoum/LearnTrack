@@ -54,7 +54,13 @@ class ClientsViewModel: ObservableObject {
                 .value
             
             #if DEBUG
-            print("✅ Successfully fetched \(response.count) clients")
+            print("✅ Successfully decoded \(response.count) clients")
+            for (index, client) in response.prefix(3).enumerated() {
+                print("   Client \(index): nom='\(client.nom)', prenom='\(client.prenom)', fullName='\(client.fullName)'")
+                if client.nom.isEmpty && client.prenom.isEmpty {
+                    print("   ⚠️ WARNING: Client \(index) has empty nom and prenom!")
+                }
+            }
             #endif
             
             self.clients = response
@@ -64,6 +70,9 @@ class ClientsViewModel: ObservableObject {
             #if DEBUG
             print("❌ Error fetching clients: \(error)")
             print("   Error description: \(errorDescription)")
+            if let decodingError = error as? DecodingError {
+                print("   Decoding error details: \(decodingError)")
+            }
             #endif
             
             // Check if it's a table not found error
@@ -74,10 +83,16 @@ class ClientsViewModel: ObservableObject {
                 self.errorMessage = "❌ Table 'clients' not found!\n\nPlease create it in Supabase:\n1. Go to SQL Editor\n2. Run the script from COMPLETE_DATABASE_SETUP.md"
             } else if errorDescription.contains("couldn't be read") || 
                       errorDescription.contains("correct format") ||
-                      errorDescription.contains("decoding") {
+                      errorDescription.contains("decoding") ||
+                      error is DecodingError {
                 self.clients = []
+                #if DEBUG
                 print("⚠️ Warning: Could not decode clients. Table might be empty or have wrong structure.")
-                self.errorMessage = "Table structure mismatch. Check column names match the model."
+                if let decodingError = error as? DecodingError {
+                    print("   Decoding error: \(decodingError)")
+                }
+                #endif
+                self.errorMessage = "Table structure mismatch. Check column names match the model.\n\nExpected columns:\n- id (uuid)\n- nom, prenom (text)\n- email, telephone, entreprise, adresse, notes (text, nullable)\n- created_at, updated_at (timestamptz, nullable)"
             } else {
                 self.errorMessage = "Failed to load clients: \(errorDescription)\n\nCheck:\n- Internet connection\n- Supabase project is active\n- Tables exist in database"
             }
