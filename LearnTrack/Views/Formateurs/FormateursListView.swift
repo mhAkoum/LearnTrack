@@ -19,9 +19,6 @@ struct FormateursListView: View {
                 SearchBar(text: $viewModel.searchText)
                     .padding(.horizontal)
                 
-                // Filter Buttons
-                FilterButtonsView(viewModel: viewModel)
-                
                 // Formateurs List
                 if viewModel.isLoading && viewModel.formateurs.isEmpty {
                     ProgressView()
@@ -55,9 +52,7 @@ struct FormateursListView: View {
                 FormateurFormView(viewModel: viewModel, formateur: nil)
             }
             .task {
-                // Test connection first
-                await SupabaseService.shared.testConnection()
-                // Then fetch formateurs
+                // Fetch formateurs
                 await viewModel.fetchFormateurs()
             }
             .onChange(of: viewModel.errorMessage) { oldValue, newValue in
@@ -90,90 +85,46 @@ struct FormateurRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Type Badge
+            // Status Badge
             Circle()
-                .fill(formateur.isInterne ? Color.blue : Color.orange)
+                .fill(formateur.actif ? Color.green : Color.gray)
                 .frame(width: 12, height: 12)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(formateur.fullName)
                     .font(.headline)
                 
-                if let email = formateur.email {
-                    Text(email)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text(formateur.email)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 
                 if let telephone = formateur.telephone {
                     Text(telephone)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                
+                if let specialites = formateur.specialites, !specialites.isEmpty {
+                    Text(specialites.joined(separator: ", "))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
             }
             
             Spacer()
             
-            Text(formateur.type.capitalized)
-                .font(.caption)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(formateur.isInterne ? Color.blue.opacity(0.2) : Color.orange.opacity(0.2))
-                .foregroundColor(formateur.isInterne ? .blue : .orange)
-                .cornerRadius(8)
+            if !formateur.actif {
+                Text("Inactif")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.red.opacity(0.2))
+                    .foregroundColor(.red)
+                    .cornerRadius(8)
+            }
         }
         .padding(.vertical, 4)
-    }
-}
-
-// MARK: - Filter Buttons View
-struct FilterButtonsView: View {
-    @ObservedObject var viewModel: FormateursViewModel
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                FilterButton(
-                    title: "All",
-                    isSelected: viewModel.filterType == nil,
-                    action: { viewModel.filterType = nil }
-                )
-                
-                FilterButton(
-                    title: "Interne",
-                    isSelected: viewModel.filterType == .interne,
-                    action: { viewModel.filterType = .interne }
-                )
-                
-                FilterButton(
-                    title: "Externe",
-                    isSelected: viewModel.filterType == .externe,
-                    action: { viewModel.filterType = .externe }
-                )
-            }
-            .padding(.horizontal)
-        }
-        .padding(.vertical, 8)
-    }
-}
-
-// MARK: - Filter Button
-struct FilterButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(isSelected ? Color.accentColor : Color(.systemGray6))
-                .foregroundColor(isSelected ? .white : .primary)
-                .cornerRadius(20)
-        }
     }
 }
 

@@ -36,7 +36,7 @@ struct MainTabView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     if let user = authViewModel.currentUser {
-                        Text("Signed in as: \(user.email)")
+                        Text("Signed in as: \(user.fullName)")
                             .font(.caption)
                     }
                     

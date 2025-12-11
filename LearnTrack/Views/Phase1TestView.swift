@@ -110,32 +110,36 @@ struct Phase1TestView: View {
     // MARK: - Test Functions
     
     private func testConstants() -> TestResult {
-        let urlValid = !Constants.supabaseURL.isEmpty
-        let keyValid = !Constants.supabasePublishableKey.isEmpty
+        // Test that Constants exists and has date formats
+        let dateFormatValid = !Constants.dateFormat.isEmpty
+        let displayFormatValid = !Constants.displayDateFormat.isEmpty
         
-        if urlValid && keyValid {
+        if dateFormatValid && displayFormatValid {
             return TestResult(
                 name: "Constants Configuration",
                 status: .success,
-                message: "Supabase URL and keys configured"
+                message: "Constants configured correctly"
             )
         } else {
             return TestResult(
                 name: "Constants Configuration",
                 status: .failure,
-                message: "Missing Supabase configuration"
+                message: "Missing constants configuration"
             )
         }
     }
     
     private func testUserModel() -> TestResult {
         let user = User(
-            id: UUID(),
+            id: 1,
             email: "test@example.com",
-            role: "admin"
+            nom: "Doe",
+            prenom: "John",
+            role: "admin",
+            actif: true
         )
         
-        let isValid = !user.email.isEmpty && user.isAdmin
+        let isValid = !user.email.isEmpty && user.isAdmin && !user.fullName.isEmpty
         
         return TestResult(
             name: "User Model",
@@ -146,13 +150,23 @@ struct Phase1TestView: View {
     
     private func testSessionModel() -> TestResult {
         let session = Session(
-            date_debut: "2025-12-04T10:00:00",
-            date_fin: "2025-12-04T18:00:00",
-            module: "iOS Development",
-            presentiel_distanciel: "Présentiel"
+            id: 1,
+            titre: "iOS Development",
+            description: "Formation iOS",
+            dateDebut: "2025-12-04",
+            dateFin: "2025-12-04",
+            heureDebut: "10:00:00",
+            heureFin: "18:00:00",
+            clientId: nil,
+            ecoleId: nil,
+            formateurId: nil,
+            nbParticipants: 10,
+            statut: "planifié",
+            prix: 500.0,
+            notes: nil
         )
         
-        let isValid = session.isPresentiel && !session.module.isEmpty
+        let isValid = !session.titre.isEmpty && !session.statut.isEmpty
         
         return TestResult(
             name: "Session Model",
@@ -167,10 +181,17 @@ struct Phase1TestView: View {
             nom: "Doe",
             prenom: "John",
             email: "john@example.com",
-            exterieur: false  // false = interne, true = externe
+            telephone: "+33123456789",
+            specialites: ["iOS", "Swift"],
+            tarifJournalier: 500.0,
+            adresse: nil,
+            ville: nil,
+            codePostal: nil,
+            notes: nil,
+            actif: true
         )
         
-        let isValid = !formateur.fullName.isEmpty && formateur.isInterne
+        let isValid = !formateur.fullName.isEmpty && !formateur.email.isEmpty
         
         return TestResult(
             name: "Formateur Model",
@@ -181,12 +202,22 @@ struct Phase1TestView: View {
     
     private func testClientModel() -> TestResult {
         let client = Client(
-            nom: "Smith",
-            prenom: "Jane",
-            email: "jane@example.com"
+            id: 1,
+            nom: "TechCorp",
+            email: "contact@techcorp.com",
+            telephone: "+33123456789",
+            adresse: "123 Main St",
+            ville: "Paris",
+            codePostal: "75001",
+            siret: "12345678901234",
+            contactNom: "Jane Smith",
+            contactEmail: "jane@example.com",
+            contactTelephone: "+33123456789",
+            notes: nil,
+            actif: true
         )
         
-        let isValid = !client.fullName.isEmpty
+        let isValid = !client.nom.isEmpty
         
         return TestResult(
             name: "Client Model",
@@ -197,8 +228,17 @@ struct Phase1TestView: View {
     
     private func testEcoleModel() -> TestResult {
         let ecole = Ecole(
+            id: 1,
             nom: "EPITA",
-            contact_email: "contact@epita.fr"
+            adresse: "14-16 Rue Voltaire",
+            ville: "Le Kremlin-Bicêtre",
+            codePostal: "94270",
+            telephone: "+33123456789",
+            email: "contact@epita.fr",
+            responsableNom: "John Doe",
+            capacite: 100,
+            notes: nil,
+            actif: true
         )
         
         let isValid = !ecole.nom.isEmpty
@@ -211,19 +251,16 @@ struct Phase1TestView: View {
     }
     
     private func testSupabaseService() -> TestResult {
-        let service = SupabaseService.shared
-        // SupabaseClient is non-optional, so if we get here, it's initialized
-        let _ = service.client
-        
+        // Supabase service removed - using REST API instead
         return TestResult(
-            name: "Supabase Service",
+            name: "API Service",
             status: .success,
-            message: "Supabase service initialized successfully"
+            message: "Using REST API service (APIService)"
         )
     }
     
     private func testKeychainService() -> TestResult {
-        let keychain = KeychainService.shared
+        let keychain = KeychainManager.shared
         let testKey = "test.key"
         let testValue = "test_value_123"
         
@@ -239,9 +276,9 @@ struct Phase1TestView: View {
         let isValid = saveSuccess && retrievedValue == testValue && deleteSuccess
         
         return TestResult(
-            name: "Keychain Service",
+            name: "Keychain Manager",
             status: isValid ? .success : .failure,
-            message: isValid ? "Keychain operations work correctly" : "Keychain service has issues"
+            message: isValid ? "Keychain operations work correctly" : "Keychain manager has issues"
         )
     }
     
@@ -328,14 +365,14 @@ struct ServiceTestSection: View {
                 .foregroundColor(.secondary)
             
             HStack {
-                Text("SupabaseService:")
+                Text("APIService:")
                 Spacer()
                 Text("✅")
                     .foregroundColor(.green)
             }
             
             HStack {
-                Text("KeychainService:")
+                Text("KeychainManager:")
                 Spacer()
                 Text("✅")
                     .foregroundColor(.green)

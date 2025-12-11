@@ -42,12 +42,12 @@ struct EcoleDetailView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
                 // Contact Actions
-                if ecole.contact_telephone != nil || ecole.contact_email != nil {
+                if ecole.telephone != nil || ecole.email != nil {
                     VStack(spacing: 12) {
-                        if let telephone = ecole.contact_telephone {
+                        if let telephone = ecole.telephone {
                             ContactActionButton(
                                 icon: "phone.fill",
-                                title: "Call Contact",
+                                title: "Call",
                                 color: .green,
                                 action: {
                                     if let url = URL(string: "tel://\(telephone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))") {
@@ -57,10 +57,10 @@ struct EcoleDetailView: View {
                             )
                         }
                         
-                        if let email = ecole.contact_email {
+                        if let email = ecole.email {
                             ContactActionButton(
                                 icon: "envelope.fill",
-                                title: "Email Contact",
+                                title: "Email",
                                 color: .blue,
                                 action: {
                                     if let url = URL(string: "mailto:\(email)") {
@@ -78,20 +78,32 @@ struct EcoleDetailView: View {
                 
                 // Details Section
                 VStack(alignment: .leading, spacing: 16) {
-                    if let contactNom = ecole.contact_nom {
-                        DetailRow(icon: "person", title: "Contact", value: contactNom)
+                    if let responsableNom = ecole.responsableNom {
+                        DetailRow(icon: "person", title: "Responsable", value: responsableNom)
                     }
                     
-                    if let contactEmail = ecole.contact_email {
-                        DetailRow(icon: "envelope", title: "Email", value: contactEmail)
+                    if let email = ecole.email {
+                        DetailRow(icon: "envelope", title: "Email", value: email)
                     }
                     
-                    if let contactTelephone = ecole.contact_telephone {
-                        DetailRow(icon: "phone", title: "Téléphone", value: contactTelephone)
+                    if let telephone = ecole.telephone {
+                        DetailRow(icon: "phone", title: "Téléphone", value: telephone)
                     }
                     
                     if let adresse = ecole.adresse {
                         DetailRow(icon: "mappin", title: "Adresse", value: adresse)
+                    }
+                    
+                    if let ville = ecole.ville {
+                        DetailRow(icon: "mappin", title: "Ville", value: ville)
+                    }
+                    
+                    if let codePostal = ecole.codePostal {
+                        DetailRow(icon: "number", title: "Code Postal", value: codePostal)
+                    }
+                    
+                    if let capacite = ecole.capacite {
+                        DetailRow(icon: "person.2", title: "Capacité", value: "\(capacite)")
                     }
                     
                     if let notes = ecole.notes, !notes.isEmpty {
@@ -144,7 +156,7 @@ struct EcoleDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 Task {
-                    try? await viewModel.deleteEcole(ecole)
+                    try? await viewModel.deleteEcole(id: ecole.id)
                 }
             }
         } message: {
@@ -157,11 +169,17 @@ struct EcoleDetailView: View {
     NavigationView {
         EcoleDetailView(
             ecole: Ecole(
+                id: 1,
                 nom: "EPITA",
-                contact_nom: "John Doe",
-                contact_email: "contact@epita.fr",
-                contact_telephone: "+33123456789",
-                adresse: "14-16 Rue Voltaire, 94270 Le Kremlin-Bicêtre"
+                adresse: "14-16 Rue Voltaire",
+                ville: "Le Kremlin-Bicêtre",
+                codePostal: "94270",
+                telephone: "+33123456789",
+                email: "contact@epita.fr",
+                responsableNom: "John Doe",
+                capacite: 100,
+                notes: "École d'ingénieurs",
+                actif: true
             ),
             viewModel: EcolesViewModel()
         )

@@ -14,10 +14,13 @@ struct EcoleFormView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var nom: String = ""
-    @State private var contactNom: String = ""
-    @State private var contactEmail: String = ""
-    @State private var contactTelephone: String = ""
     @State private var adresse: String = ""
+    @State private var ville: String = ""
+    @State private var codePostal: String = ""
+    @State private var telephone: String = ""
+    @State private var email: String = ""
+    @State private var responsableNom: String = ""
+    @State private var capacite: String = ""
     @State private var notes: String = ""
     
     @State private var showingError = false
@@ -39,19 +42,27 @@ struct EcoleFormView: View {
                     TextField("Nom de l'école", text: $nom)
                 }
                 
+                Section("Adresse") {
+                    TextField("Adresse", text: $adresse)
+                    TextField("Ville", text: $ville)
+                    TextField("Code Postal", text: $codePostal)
+                        .keyboardType(.numberPad)
+                }
+                
                 Section("Contact") {
-                    TextField("Nom du contact", text: $contactNom)
-                    TextField("Email", text: $contactEmail)
+                    TextField("Responsable", text: $responsableNom)
+                    TextField("Email", text: $email)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .autocorrectionDisabled()
                     
-                    TextField("Téléphone", text: $contactTelephone)
+                    TextField("Téléphone", text: $telephone)
                         .keyboardType(.phonePad)
                 }
                 
-                Section("Adresse") {
-                    TextField("Adresse", text: $adresse)
+                Section("Informations complémentaires") {
+                    TextField("Capacité", text: $capacite)
+                        .keyboardType(.numberPad)
                 }
                 
                 Section("Notes") {
@@ -91,10 +102,15 @@ struct EcoleFormView: View {
     
     private func loadEcoleData(_ ecole: Ecole) {
         nom = ecole.nom
-        contactNom = ecole.contact_nom ?? ""
-        contactEmail = ecole.contact_email ?? ""
-        contactTelephone = ecole.contact_telephone ?? ""
         adresse = ecole.adresse ?? ""
+        ville = ecole.ville ?? ""
+        codePostal = ecole.codePostal ?? ""
+        telephone = ecole.telephone ?? ""
+        email = ecole.email ?? ""
+        responsableNom = ecole.responsableNom ?? ""
+        if let capaciteValue = ecole.capacite {
+            capacite = "\(capaciteValue)"
+        }
         notes = ecole.notes ?? ""
     }
     
@@ -106,29 +122,46 @@ struct EcoleFormView: View {
             return
         }
         
-        if !contactEmail.isEmpty && !contactEmail.isValidEmail {
+        if !email.isEmpty && !email.isValidEmail {
             errorMessage = "Please enter a valid email address"
             showingError = true
             return
         }
         
-        // Create or update ecole
-        let ecoleToSave = Ecole(
-            id: ecole?.id ?? UUID(),
-            nom: nom,
-            contact_nom: contactNom.isEmpty ? nil : contactNom,
-            contact_email: contactEmail.isEmpty ? nil : contactEmail,
-            contact_telephone: contactTelephone.isEmpty ? nil : contactTelephone,
-            adresse: adresse.isEmpty ? nil : adresse,
-            notes: notes.isEmpty ? nil : notes
-        )
+        // Parse capacite
+        let capaciteValue = capacite.isEmpty ? nil : Int(capacite)
         
         Task {
             do {
-                if isEditMode {
-                    try await viewModel.updateEcole(ecoleToSave)
+                if isEditMode, let ecoleId = ecole?.id {
+                    // Update existing ecole
+                    let ecoleUpdate = EcoleUpdate(
+                        nom: nom,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        email: email.isEmpty ? nil : email,
+                        responsableNom: responsableNom.isEmpty ? nil : responsableNom,
+                        capacite: capaciteValue,
+                        notes: notes.isEmpty ? nil : notes,
+                        actif: nil
+                    )
+                    try await viewModel.updateEcole(id: ecoleId, ecoleUpdate)
                 } else {
-                    try await viewModel.createEcole(ecoleToSave)
+                    // Create new ecole
+                    let ecoleCreate = EcoleCreate(
+                        nom: nom,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        email: email.isEmpty ? nil : email,
+                        responsableNom: responsableNom.isEmpty ? nil : responsableNom,
+                        capacite: capaciteValue,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    try await viewModel.createEcole(ecoleCreate)
                 }
                 dismiss()
             } catch {

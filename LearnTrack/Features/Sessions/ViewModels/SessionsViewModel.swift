@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import Supabase
 
 @MainActor
 class SessionsViewModel: ObservableObject {
@@ -18,12 +17,12 @@ class SessionsViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedFilter: FilterType?
     
-    private let supabase = SupabaseService.shared.client
+    private let apiService = APIService.shared
     
     enum FilterType {
         case date(Date)
-        case formateur(UUID)
-        case client(UUID)
+        case formateur(Int)
+        case client(Int)
     }
     
     var filteredSessions: [Session] {
@@ -32,7 +31,8 @@ class SessionsViewModel: ObservableObject {
         // Apply search filter
         if !searchText.isEmpty {
             result = result.filter { session in
-                session.module.localizedCaseInsensitiveContains(searchText)
+                session.titre.localizedCaseInsensitiveContains(searchText) ||
+                (session.description?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
         }
         
@@ -41,37 +41,32 @@ class SessionsViewModel: ObservableObject {
             switch filter {
             case .date(let date):
                 result = result.filter { session in
-                    guard let sessionDate = session.dateDebut else { return false }
+                    guard let sessionDate = session.dateDebutDate else { return false }
                     return Calendar.current.isDate(sessionDate, inSameDayAs: date)
                 }
             case .formateur(let formateurId):
-                result = result.filter { $0.formateur_id == formateurId }
+                result = result.filter { $0.formateurId == formateurId }
             case .client(let clientId):
-                result = result.filter { $0.client_id == clientId }
+                result = result.filter { $0.clientId == clientId }
             }
         }
         
         // Sort by date (most recent first)
         return result.sorted { session1, session2 in
-            guard let date1 = session1.dateDebut, let date2 = session2.dateDebut else {
+            guard let date1 = session1.dateDebutDate, let date2 = session2.dateDebutDate else {
                 return false
             }
             return date1 > date2
         }
     }
     
-    /// Fetch all sessions from Supabase
+    /// Fetch all sessions from API
     func fetchSessions() async {
         isLoading = true
         errorMessage = nil
         
         do {
-            let response: [Session] = try await supabase
-                .from("sessions")
-                .select()
-                .execute()
-                .value
-            
+            let response = try await apiService.getSessions()
             self.sessions = response
         } catch {
             self.errorMessage = "Failed to load sessions: \(error.localizedDescription)"
@@ -81,19 +76,12 @@ class SessionsViewModel: ObservableObject {
     }
     
     /// Create a new session
-    func createSession(_ session: Session) async throws {
+    func createSession(_ session: SessionCreate) async throws {
         isLoading = true
         errorMessage = nil
         
         do {
-            let _: Session = try await supabase
-                .from("sessions")
-                .insert(session)
-                .select()
-                .single()
-                .execute()
-                .value
-            
+            let _ = try await apiService.createSession(session)
             // Refresh the list
             await fetchSessions()
         } catch {
@@ -105,20 +93,12 @@ class SessionsViewModel: ObservableObject {
     }
     
     /// Update an existing session
-    func updateSession(_ session: Session) async throws {
+    func updateSession(id: Int, _ session: SessionUpdate) async throws {
         isLoading = true
         errorMessage = nil
         
         do {
-            let _: Session = try await supabase
-                .from("sessions")
-                .update(session)
-                .eq("id", value: session.id)
-                .select()
-                .single()
-                .execute()
-                .value
-            
+            let _ = try await apiService.updateSession(id: id, session)
             // Refresh the list
             await fetchSessions()
         } catch {
@@ -130,17 +110,12 @@ class SessionsViewModel: ObservableObject {
     }
     
     /// Delete a session
-    func deleteSession(_ session: Session) async throws {
+    func deleteSession(id: Int) async throws {
         isLoading = true
         errorMessage = nil
         
         do {
-            try await supabase
-                .from("sessions")
-                .delete()
-                .eq("id", value: session.id)
-                .execute()
-            
+            try await apiService.deleteSession(id: id)
             // Refresh the list
             await fetchSessions()
         } catch {

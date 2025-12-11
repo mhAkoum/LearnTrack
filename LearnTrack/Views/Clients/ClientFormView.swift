@@ -14,11 +14,15 @@ struct ClientFormView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var nom: String = ""
-    @State private var prenom: String = ""
     @State private var email: String = ""
     @State private var telephone: String = ""
-    @State private var entreprise: String = ""
     @State private var adresse: String = ""
+    @State private var ville: String = ""
+    @State private var codePostal: String = ""
+    @State private var siret: String = ""
+    @State private var contactNom: String = ""
+    @State private var contactEmail: String = ""
+    @State private var contactTelephone: String = ""
     @State private var notes: String = ""
     
     @State private var showingError = false
@@ -36,9 +40,8 @@ struct ClientFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Informations personnelles") {
+                Section("Informations du client") {
                     TextField("Nom", text: $nom)
-                    TextField("Prénom", text: $prenom)
                 }
                 
                 Section("Contact") {
@@ -51,9 +54,26 @@ struct ClientFormView: View {
                         .keyboardType(.phonePad)
                 }
                 
-                Section("Entreprise") {
-                    TextField("Nom de l'entreprise", text: $entreprise)
+                Section("Adresse") {
                     TextField("Adresse", text: $adresse)
+                    TextField("Ville", text: $ville)
+                    TextField("Code Postal", text: $codePostal)
+                        .keyboardType(.numberPad)
+                }
+                
+                Section("Informations entreprise") {
+                    TextField("SIRET", text: $siret)
+                        .keyboardType(.numberPad)
+                }
+                
+                Section("Contact entreprise") {
+                    TextField("Nom du contact", text: $contactNom)
+                    TextField("Email du contact", text: $contactEmail)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .autocorrectionDisabled()
+                    TextField("Téléphone du contact", text: $contactTelephone)
+                        .keyboardType(.phonePad)
                 }
                 
                 Section("Notes") {
@@ -74,7 +94,7 @@ struct ClientFormView: View {
                     Button("Save") {
                         saveClient()
                     }
-                    .disabled(nom.isEmpty || prenom.isEmpty || viewModel.isLoading)
+                    .disabled(nom.isEmpty || viewModel.isLoading)
                 }
             }
             .onAppear {
@@ -93,18 +113,22 @@ struct ClientFormView: View {
     
     private func loadClientData(_ client: Client) {
         nom = client.nom
-        prenom = client.prenom
         email = client.email ?? ""
         telephone = client.telephone ?? ""
-        entreprise = client.entreprise ?? ""
         adresse = client.adresse ?? ""
+        ville = client.ville ?? ""
+        codePostal = client.codePostal ?? ""
+        siret = client.siret ?? ""
+        contactNom = client.contactNom ?? ""
+        contactEmail = client.contactEmail ?? ""
+        contactTelephone = client.contactTelephone ?? ""
         notes = client.notes ?? ""
     }
     
     private func saveClient() {
         // Validate
-        guard !nom.isEmpty, !prenom.isEmpty else {
-            errorMessage = "Nom and Prénom are required"
+        guard !nom.isEmpty else {
+            errorMessage = "Nom is required"
             showingError = true
             return
         }
@@ -115,24 +139,47 @@ struct ClientFormView: View {
             return
         }
         
-        // Create or update client
-        let clientToSave = Client(
-            id: client?.id ?? UUID(),
-            nom: nom,
-            prenom: prenom,
-            email: email.isEmpty ? nil : email,
-            telephone: telephone.isEmpty ? nil : telephone,
-            entreprise: entreprise.isEmpty ? nil : entreprise,
-            adresse: adresse.isEmpty ? nil : adresse,
-            notes: notes.isEmpty ? nil : notes
-        )
+        if !contactEmail.isEmpty && !contactEmail.isValidEmail {
+            errorMessage = "Please enter a valid contact email address"
+            showingError = true
+            return
+        }
         
         Task {
             do {
-                if isEditMode {
-                    try await viewModel.updateClient(clientToSave)
+                if isEditMode, let clientId = client?.id {
+                    // Update existing client
+                    let clientUpdate = ClientUpdate(
+                        nom: nom,
+                        email: email.isEmpty ? nil : email,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        siret: siret.isEmpty ? nil : siret,
+                        contactNom: contactNom.isEmpty ? nil : contactNom,
+                        contactEmail: contactEmail.isEmpty ? nil : contactEmail,
+                        contactTelephone: contactTelephone.isEmpty ? nil : contactTelephone,
+                        notes: notes.isEmpty ? nil : notes,
+                        actif: nil
+                    )
+                    try await viewModel.updateClient(id: clientId, clientUpdate)
                 } else {
-                    try await viewModel.createClient(clientToSave)
+                    // Create new client
+                    let clientCreate = ClientCreate(
+                        nom: nom,
+                        email: email.isEmpty ? nil : email,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        siret: siret.isEmpty ? nil : siret,
+                        contactNom: contactNom.isEmpty ? nil : contactNom,
+                        contactEmail: contactEmail.isEmpty ? nil : contactEmail,
+                        contactTelephone: contactTelephone.isEmpty ? nil : contactTelephone,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    try await viewModel.createClient(clientCreate)
                 }
                 dismiss()
             } catch {

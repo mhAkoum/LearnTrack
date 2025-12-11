@@ -88,17 +88,17 @@ struct ClientRowView: View {
                 .fill(Color.green.opacity(0.2))
                 .frame(width: 40, height: 40)
                 .overlay(
-                    Text(String(client.prenom.prefix(1)).uppercased())
+                    Text(String(client.nom.prefix(1)).uppercased())
                         .font(.headline)
                         .foregroundColor(.green)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(client.fullName)
+                Text(client.nom)
                     .font(.headline)
                 
-                if let entreprise = client.entreprise {
-                    Text(entreprise)
+                if let ville = client.ville {
+                    Text(ville)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

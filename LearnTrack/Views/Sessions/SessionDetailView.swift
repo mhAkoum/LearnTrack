@@ -19,30 +19,22 @@ struct SessionDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 // Header Card
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Circle()
-                            .fill(session.isPresentiel ? Color.green : Color.blue)
-                            .frame(width: 16, height: 16)
-                        
-                        Text(session.presentiel_distanciel)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                    }
-                    
-                    Text(session.module)
+                    Text(session.titre)
                         .font(.title)
                         .fontWeight(.bold)
                     
-                    if let statut = session.statut {
-                        Text(statut)
-                            .font(.subheadline)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.accentColor.opacity(0.2))
-                            .foregroundColor(.accentColor)
-                            .cornerRadius(8)
+                    Text(session.statut)
+                        .font(.subheadline)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.accentColor.opacity(0.2))
+                        .foregroundColor(.accentColor)
+                        .cornerRadius(8)
+                    
+                    if let description = session.description, !description.isEmpty {
+                        Text(description)
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                 }
                 .padding()
@@ -55,12 +47,20 @@ struct SessionDetailView: View {
                     DetailRow(icon: "calendar", title: "Date de début", value: session.formattedDateDebut)
                     DetailRow(icon: "calendar", title: "Date de fin", value: session.formattedDateFin)
                     
-                    if let prix = session.prix {
-                        DetailRow(icon: "eurosign.circle", title: "Prix", value: String(format: "%.2f €", prix))
+                    if let heureDebut = session.heureDebut {
+                        DetailRow(icon: "clock", title: "Heure de début", value: heureDebut)
                     }
                     
-                    if let nda = session.nda, !nda.isEmpty {
-                        DetailRow(icon: "doc.text", title: "NDA", value: nda)
+                    if let heureFin = session.heureFin {
+                        DetailRow(icon: "clock", title: "Heure de fin", value: heureFin)
+                    }
+                    
+                    if let nbParticipants = session.nbParticipants {
+                        DetailRow(icon: "person.2", title: "Participants", value: "\(nbParticipants)")
+                    }
+                    
+                    if let prix = session.prix {
+                        DetailRow(icon: "eurosign.circle", title: "Prix", value: String(format: "%.2f €", prix))
                     }
                     
                     if let notes = session.notes, !notes.isEmpty {
@@ -122,7 +122,7 @@ struct SessionDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 Task {
-                    try? await viewModel.deleteSession(session)
+                    try? await viewModel.deleteSession(id: session.id)
                 }
             }
         } message: {
@@ -131,9 +131,9 @@ struct SessionDetailView: View {
     }
     
     private func sessionShareText() -> String {
-        var text = "Session: \(session.module)\n"
+        var text = "Session: \(session.titre)\n"
         text += "Date: \(session.formattedDateDebut) - \(session.formattedDateFin)\n"
-        text += "Type: \(session.presentiel_distanciel)\n"
+        text += "Statut: \(session.statut)\n"
         if let prix = session.prix {
             text += "Prix: \(String(format: "%.2f €", prix))\n"
         }
@@ -188,10 +188,20 @@ struct ShareSheet: UIViewControllerRepresentable {
     NavigationView {
         SessionDetailView(
             session: Session(
-                date_debut: "2025-12-04T10:00:00",
-                date_fin: "2025-12-04T18:00:00",
-                module: "iOS Development",
-                presentiel_distanciel: "Présentiel"
+                id: 1,
+                titre: "iOS Development",
+                description: "Formation iOS avancée",
+                dateDebut: "2025-12-04",
+                dateFin: "2025-12-04",
+                heureDebut: "10:00:00",
+                heureFin: "18:00:00",
+                clientId: nil,
+                ecoleId: nil,
+                formateurId: nil,
+                nbParticipants: 10,
+                statut: "planifié",
+                prix: 500.0,
+                notes: "Session importante"
             ),
             viewModel: SessionsViewModel()
         )

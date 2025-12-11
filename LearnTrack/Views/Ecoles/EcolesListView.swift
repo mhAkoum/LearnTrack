@@ -96,14 +96,14 @@ struct EcoleRowView: View {
                 Text(ecole.nom)
                     .font(.headline)
                 
-                if let contactNom = ecole.contact_nom {
-                    Text(contactNom)
+                if let responsableNom = ecole.responsableNom {
+                    Text(responsableNom)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
-                if let contactEmail = ecole.contact_email {
-                    Text(contactEmail)
+                if let email = ecole.email {
+                    Text(email)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

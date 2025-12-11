@@ -17,8 +17,11 @@ struct FormateurFormView: View {
     @State private var prenom: String = ""
     @State private var email: String = ""
     @State private var telephone: String = ""
-    @State private var type: String = "interne"
     @State private var specialites: String = ""
+    @State private var tarifJournalier: String = ""
+    @State private var adresse: String = ""
+    @State private var ville: String = ""
+    @State private var codePostal: String = ""
     @State private var notes: String = ""
     
     @State private var showingError = false
@@ -51,16 +54,20 @@ struct FormateurFormView: View {
                         .keyboardType(.phonePad)
                 }
                 
-                Section("Type") {
-                    Picker("Type", selection: $type) {
-                        Text("Interne").tag("interne")
-                        Text("Externe").tag("externe")
-                    }
-                    .pickerStyle(.segmented)
+                Section("Spécialités") {
+                    TextField("Spécialités (séparées par des virgules)", text: $specialites)
                 }
                 
-                Section("Spécialités") {
-                    TextField("Spécialités", text: $specialites)
+                Section("Tarif") {
+                    TextField("Tarif journalier (€)", text: $tarifJournalier)
+                        .keyboardType(.decimalPad)
+                }
+                
+                Section("Adresse") {
+                    TextField("Adresse", text: $adresse)
+                    TextField("Ville", text: $ville)
+                    TextField("Code Postal", text: $codePostal)
+                        .keyboardType(.numberPad)
                 }
                 
                 Section("Notes") {
@@ -81,7 +88,7 @@ struct FormateurFormView: View {
                     Button("Save") {
                         saveFormateur()
                     }
-                    .disabled(nom.isEmpty || prenom.isEmpty || viewModel.isLoading)
+                    .disabled(nom.isEmpty || prenom.isEmpty || email.isEmpty || viewModel.isLoading)
                 }
             }
             .onAppear {
@@ -101,44 +108,74 @@ struct FormateurFormView: View {
     private func loadFormateurData(_ formateur: Formateur) {
         nom = formateur.nom
         prenom = formateur.prenom
-        email = formateur.email ?? ""
+        email = formateur.email
         telephone = formateur.telephone ?? ""
-        type = formateur.type  // Use computed property
-        specialites = formateur.specialites ?? ""  // Use computed property
-        notes = formateur.notes ?? ""  // Use computed property
+        specialites = formateur.specialites?.joined(separator: ", ") ?? ""
+        if let tarif = formateur.tarifJournalier {
+            tarifJournalier = String(format: "%.2f", tarif)
+        }
+        adresse = formateur.adresse ?? ""
+        ville = formateur.ville ?? ""
+        codePostal = formateur.codePostal ?? ""
+        notes = formateur.notes ?? ""
     }
     
     private func saveFormateur() {
         // Validate
-        guard !nom.isEmpty, !prenom.isEmpty else {
-            errorMessage = "Nom and Prénom are required"
+        guard !nom.isEmpty, !prenom.isEmpty, !email.isEmpty else {
+            errorMessage = "Nom, Prénom, and Email are required"
             showingError = true
             return
         }
         
-        if !email.isEmpty && !email.isValidEmail {
+        if !email.isValidEmail {
             errorMessage = "Please enter a valid email address"
             showingError = true
             return
         }
         
-        // Create or update formateur
-        let formateurToSave = Formateur(
-            id: formateur?.id ?? 0,  // 0 for new records, database will auto-increment
-            nom: nom,
-            prenom: prenom,
-            email: email.isEmpty ? nil : email,
-            telephone: telephone.isEmpty ? nil : telephone,
-            specialite: specialites.isEmpty ? nil : specialites,
-            exterieur: type == "externe"  // Convert type string to boolean
-        )
+        // Parse specialites (comma-separated string to array)
+        let specialitesArray = specialites.isEmpty ? nil : specialites
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        
+        // Parse tarifJournalier
+        let tarifValue = tarifJournalier.isEmpty ? nil : Double(tarifJournalier.replacingOccurrences(of: ",", with: "."))
         
         Task {
             do {
-                if isEditMode {
-                    try await viewModel.updateFormateur(formateurToSave)
+                if isEditMode, let formateurId = formateur?.id {
+                    // Update existing formateur
+                    let formateurUpdate = FormateurUpdate(
+                        nom: nom,
+                        prenom: prenom,
+                        email: email,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        specialites: specialitesArray,
+                        tarifJournalier: tarifValue,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        notes: notes.isEmpty ? nil : notes,
+                        actif: nil
+                    )
+                    try await viewModel.updateFormateur(id: formateurId, formateurUpdate)
                 } else {
-                    try await viewModel.createFormateur(formateurToSave)
+                    // Create new formateur
+                    let formateurCreate = FormateurCreate(
+                        nom: nom,
+                        prenom: prenom,
+                        email: email,
+                        telephone: telephone.isEmpty ? nil : telephone,
+                        specialites: specialitesArray,
+                        tarifJournalier: tarifValue,
+                        adresse: adresse.isEmpty ? nil : adresse,
+                        ville: ville.isEmpty ? nil : ville,
+                        codePostal: codePostal.isEmpty ? nil : codePostal,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    try await viewModel.createFormateur(formateurCreate)
                 }
                 dismiss()
             } catch {

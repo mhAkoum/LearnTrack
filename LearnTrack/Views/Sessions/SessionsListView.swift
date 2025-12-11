@@ -89,13 +89,13 @@ struct SessionRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Type Indicator
+            // Status Indicator
             Circle()
-                .fill(session.isPresentiel ? Color.green : Color.blue)
+                .fill(statusColor(for: session.statut))
                 .frame(width: 12, height: 12)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(session.module)
+                Text(session.titre)
                     .font(.headline)
                     .lineLimit(1)
                 
@@ -119,6 +119,21 @@ struct SessionRowView: View {
             Spacer()
         }
         .padding(.vertical, 4)
+    }
+    
+    private func statusColor(for statut: String) -> Color {
+        switch statut.lowercased() {
+        case "planifié", "planifie":
+            return .blue
+        case "en cours", "encours":
+            return .green
+        case "terminé", "termine":
+            return .gray
+        case "annulé", "annule":
+            return .red
+        default:
+            return .orange
+        }
     }
 }
 

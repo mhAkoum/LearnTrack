@@ -30,9 +30,6 @@ class AuthViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            // Try to restore session from keychain
-            try await authService.restoreSession()
-            
             // Get current user
             if let user = try await authService.getCurrentUser() {
                 self.currentUser = user
@@ -69,12 +66,13 @@ class AuthViewModel: ObservableObject {
         }
         
         do {
-            try await authService.signIn(email: email, password: password)
-            
-            // Get user info after successful login
-            if let user = try await authService.getCurrentUser() {
+            if let user = try await authService.signIn(email: email, password: password) {
                 self.currentUser = user
                 self.isAuthenticated = true
+            } else {
+                errorMessage = "Invalid email or password"
+                isAuthenticated = false
+                currentUser = nil
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -86,13 +84,13 @@ class AuthViewModel: ObservableObject {
     }
     
     /// Sign up with email and password
-    func signUp(email: String, password: String) async {
+    func signUp(email: String, password: String, nom: String, prenom: String) async {
         isLoading = true
         errorMessage = nil
         
         // Validate input
-        guard !email.isEmpty, !password.isEmpty else {
-            errorMessage = "Please enter both email and password"
+        guard !email.isEmpty, !password.isEmpty, !nom.isEmpty, !prenom.isEmpty else {
+            errorMessage = "Please fill in all fields"
             isLoading = false
             return
         }
@@ -110,15 +108,11 @@ class AuthViewModel: ObservableObject {
         }
         
         do {
-            try await authService.signUp(email: email, password: password)
-            
-            // After sign up, try to get user (if auto-confirm is enabled)
-            if let user = try await authService.getCurrentUser() {
+            if let user = try await authService.signUp(email: email, password: password, nom: nom, prenom: prenom) {
                 self.currentUser = user
                 self.isAuthenticated = true
             } else {
-                // User needs to confirm email
-                errorMessage = "Please check your email to confirm your account"
+                errorMessage = "Failed to create account"
             }
         } catch {
             errorMessage = error.localizedDescription

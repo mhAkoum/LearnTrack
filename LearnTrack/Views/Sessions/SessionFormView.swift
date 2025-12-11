@@ -13,13 +13,15 @@ struct SessionFormView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    @State private var module: String = ""
+    @State private var titre: String = ""
+    @State private var description: String = ""
     @State private var dateDebut: Date = Date()
     @State private var dateFin: Date = Date().addingTimeInterval(3600 * 8) // 8 hours later
-    @State private var presentielDistanciel: String = "Présentiel"
+    @State private var heureDebut: String = ""
+    @State private var heureFin: String = ""
+    @State private var statut: String = "planifié"
     @State private var prix: String = ""
-    @State private var nda: String = ""
-    @State private var statut: String = ""
+    @State private var nbParticipants: String = ""
     @State private var notes: String = ""
     
     @State private var showingError = false
@@ -37,30 +39,35 @@ struct SessionFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Module") {
-                    TextField("Nom du module", text: $module)
+                Section("Titre") {
+                    TextField("Titre de la session", text: $titre)
+                }
+                
+                Section("Description") {
+                    TextEditor(text: $description)
+                        .frame(minHeight: 80)
                 }
                 
                 Section("Dates") {
-                    DatePicker("Date de début", selection: $dateDebut, displayedComponents: [.date, .hourAndMinute])
-                    DatePicker("Date de fin", selection: $dateFin, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("Date de début", selection: $dateDebut, displayedComponents: [.date])
+                    DatePicker("Date de fin", selection: $dateFin, displayedComponents: [.date])
                 }
                 
-                Section("Type") {
-                    Picker("Type", selection: $presentielDistanciel) {
-                        Text("Présentiel").tag("Présentiel")
-                        Text("Distanciel").tag("Distanciel")
-                    }
-                    .pickerStyle(.segmented)
+                Section("Heures") {
+                    TextField("Heure de début (HH:MM:SS)", text: $heureDebut)
+                        .keyboardType(.numbersAndPunctuation)
+                    TextField("Heure de fin (HH:MM:SS)", text: $heureFin)
+                        .keyboardType(.numbersAndPunctuation)
                 }
                 
                 Section("Informations") {
+                    TextField("Statut", text: $statut)
+                    
                     TextField("Prix (€)", text: $prix)
                         .keyboardType(.decimalPad)
                     
-                    TextField("NDA", text: $nda)
-                    
-                    TextField("Statut", text: $statut)
+                    TextField("Nombre de participants", text: $nbParticipants)
+                        .keyboardType(.numberPad)
                 }
                 
                 Section("Notes") {
@@ -81,7 +88,7 @@ struct SessionFormView: View {
                     Button("Save") {
                         saveSession()
                     }
-                    .disabled(module.isEmpty || viewModel.isLoading)
+                    .disabled(titre.isEmpty || viewModel.isLoading)
                 }
             }
             .onAppear {
@@ -99,67 +106,88 @@ struct SessionFormView: View {
     }
     
     private func loadSessionData(_ session: Session) {
-        module = session.module
-        if let date = session.dateDebut {
+        titre = session.titre
+        description = session.description ?? ""
+        if let date = session.dateDebutDate {
             dateDebut = date
         }
-        if let date = session.dateFin {
+        if let date = session.dateFinDate {
             dateFin = date
         }
-        presentielDistanciel = session.presentiel_distanciel
+        heureDebut = session.heureDebut ?? ""
+        heureFin = session.heureFin ?? ""
+        statut = session.statut
         if let prixValue = session.prix {
             prix = String(format: "%.2f", prixValue)
         }
-        nda = session.nda ?? ""
-        statut = session.statut ?? ""
+        if let nb = session.nbParticipants {
+            nbParticipants = "\(nb)"
+        }
         notes = session.notes ?? ""
     }
     
     private func saveSession() {
         // Validate
-        guard !module.isEmpty else {
-            errorMessage = "Module name is required"
+        guard !titre.isEmpty else {
+            errorMessage = "Titre is required"
             showingError = true
             return
         }
         
-        guard dateFin > dateDebut else {
-            errorMessage = "End date must be after start date"
+        guard dateFin >= dateDebut else {
+            errorMessage = "End date must be after or equal to start date"
             showingError = true
             return
         }
         
-        // Format dates to ISO 8601
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let dateDebutString = formatter.string(from: dateDebut)
-        let dateFinString = formatter.string(from: dateFin)
+        // Format dates to YYYY-MM-DD
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateDebutString = dateFormatter.string(from: dateDebut)
+        let dateFinString = dateFormatter.string(from: dateFin)
         
-        // Parse prix
-        let prixValue = Double(prix.isEmpty ? "0" : prix.replacingOccurrences(of: ",", with: "."))
-        
-        // Create or update session
-        let sessionToSave = Session(
-            id: session?.id ?? UUID(),
-            date_debut: dateDebutString,
-            date_fin: dateFinString,
-            module: module,
-            formateur_id: nil, // TODO: Add formateur picker in Phase 4
-            client_id: nil,    // TODO: Add client picker in Phase 5
-            ecole_id: nil,     // TODO: Add ecole picker in Phase 6
-            presentiel_distanciel: presentielDistanciel,
-            prix: prixValue,
-            nda: nda.isEmpty ? nil : nda,
-            statut: statut.isEmpty ? nil : statut,
-            notes: notes.isEmpty ? nil : notes
-        )
+        // Parse prix and nbParticipants
+        let prixValue = prix.isEmpty ? nil : Double(prix.replacingOccurrences(of: ",", with: "."))
+        let nbParticipantsValue = nbParticipants.isEmpty ? nil : Int(nbParticipants)
         
         Task {
             do {
-                if isEditMode {
-                    try await viewModel.updateSession(sessionToSave)
+                if isEditMode, let sessionId = session?.id {
+                    // Update existing session
+                    let sessionUpdate = SessionUpdate(
+                        titre: titre,
+                        description: description.isEmpty ? nil : description,
+                        dateDebut: dateDebutString,
+                        dateFin: dateFinString,
+                        heureDebut: heureDebut.isEmpty ? nil : heureDebut,
+                        heureFin: heureFin.isEmpty ? nil : heureFin,
+                        clientId: nil, // TODO: Add client picker
+                        ecoleId: nil,  // TODO: Add ecole picker
+                        formateurId: nil, // TODO: Add formateur picker
+                        nbParticipants: nbParticipantsValue,
+                        statut: statut.isEmpty ? nil : statut,
+                        prix: prixValue,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    try await viewModel.updateSession(id: sessionId, sessionUpdate)
                 } else {
-                    try await viewModel.createSession(sessionToSave)
+                    // Create new session
+                    let sessionCreate = SessionCreate(
+                        titre: titre,
+                        description: description.isEmpty ? nil : description,
+                        dateDebut: dateDebutString,
+                        dateFin: dateFinString,
+                        heureDebut: heureDebut.isEmpty ? nil : heureDebut,
+                        heureFin: heureFin.isEmpty ? nil : heureFin,
+                        clientId: nil, // TODO: Add client picker
+                        ecoleId: nil,  // TODO: Add ecole picker
+                        formateurId: nil, // TODO: Add formateur picker
+                        nbParticipants: nbParticipantsValue,
+                        statut: statut.isEmpty ? nil : statut,
+                        prix: prixValue,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    try await viewModel.createSession(sessionCreate)
                 }
                 dismiss()
             } catch {

@@ -1,5 +1,5 @@
 //
-//  KeychainService.swift
+//  KeychainManager.swift
 //  LearnTrack
 //
 //  Created on 04/12/2025.
@@ -9,8 +9,8 @@ import Foundation
 import Security
 
 /// Service for securely storing and retrieving tokens from iOS Keychain
-class KeychainService {
-    static let shared = KeychainService()
+class KeychainManager {
+    static let shared = KeychainManager()
     
     private init() {}
     
@@ -66,8 +66,8 @@ class KeychainService {
     
     /// Delete all tokens (for logout)
     func deleteAllTokens() {
-        _ = deleteToken(forKey: Constants.keychainTokenKey)
-        _ = deleteToken(forKey: Constants.keychainRefreshTokenKey)
+        _ = deleteToken(forKey: "auth_token")
+        _ = deleteToken(forKey: "refresh_token")
     }
 }
 

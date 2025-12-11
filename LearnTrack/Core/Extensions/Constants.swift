@@ -8,15 +8,6 @@
 import Foundation
 
 enum Constants {
-    // MARK: - Supabase Configuration
-    static let supabaseURL = "https://epsksludoqhtpxjwrdmk.supabase.co"
-    static let supabasePublishableKey = "sb_publishable_EGI8p-vAtwRsEkk6ajwhAA_odtrHX6S"
-    static let supabaseSecretKey = "sb_secret_pV5OA7vMD4cfD8Tb6nvPNQ_cjfx0lxw"
-    
-    // MARK: - Keychain Keys
-    static let keychainTokenKey = "com.learnTrack.authToken"
-    static let keychainRefreshTokenKey = "com.learnTrack.refreshToken"
-    
     // MARK: - Date Formats
     static let dateFormat = "yyyy-MM-dd"
     static let dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss"

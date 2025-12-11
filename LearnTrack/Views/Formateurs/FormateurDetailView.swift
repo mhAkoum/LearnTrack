@@ -18,21 +18,19 @@ struct FormateurDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 // Header Card
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Circle()
-                            .fill(formateur.isInterne ? Color.blue : Color.orange)
-                            .frame(width: 16, height: 16)
-                        
-                        Text(formateur.type.capitalized)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                    }
-                    
                     Text(formateur.fullName)
                         .font(.title)
                         .fontWeight(.bold)
+                    
+                    if !formateur.actif {
+                        Text("Inactif")
+                            .font(.subheadline)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.2))
+                            .foregroundColor(.red)
+                            .cornerRadius(8)
+                    }
                 }
                 .padding()
                 .background(Color(.systemBackground))
@@ -40,7 +38,7 @@ struct FormateurDetailView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
                 // Contact Actions
-                if formateur.telephone != nil || formateur.email != nil {
+                if formateur.telephone != nil {
                     VStack(spacing: 12) {
                         if let telephone = formateur.telephone {
                             ContactActionButton(
@@ -66,18 +64,16 @@ struct FormateurDetailView: View {
                             )
                         }
                         
-                        if let email = formateur.email {
-                            ContactActionButton(
-                                icon: "envelope.fill",
-                                title: "Email",
-                                color: .blue,
-                                action: {
-                                    if let url = URL(string: "mailto:\(email)") {
-                                        UIApplication.shared.open(url)
-                                    }
+                        ContactActionButton(
+                            icon: "envelope.fill",
+                            title: "Email",
+                            color: .blue,
+                            action: {
+                                if let url = URL(string: "mailto:\(formateur.email)") {
+                                    UIApplication.shared.open(url)
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                     .padding()
                     .background(Color(.systemBackground))
@@ -87,12 +83,26 @@ struct FormateurDetailView: View {
                 
                 // Details Section
                 VStack(alignment: .leading, spacing: 16) {
-                    if let email = formateur.email {
-                        DetailRow(icon: "envelope", title: "Email", value: email)
-                    }
+                    DetailRow(icon: "envelope", title: "Email", value: formateur.email)
                     
                     if let telephone = formateur.telephone {
                         DetailRow(icon: "phone", title: "Téléphone", value: telephone)
+                    }
+                    
+                    if let tarifJournalier = formateur.tarifJournalier {
+                        DetailRow(icon: "eurosign.circle", title: "Tarif Journalier", value: String(format: "%.2f €", tarifJournalier))
+                    }
+                    
+                    if let adresse = formateur.adresse {
+                        DetailRow(icon: "mappin", title: "Adresse", value: adresse)
+                    }
+                    
+                    if let ville = formateur.ville {
+                        DetailRow(icon: "mappin", title: "Ville", value: ville)
+                    }
+                    
+                    if let codePostal = formateur.codePostal {
+                        DetailRow(icon: "number", title: "Code Postal", value: codePostal)
                     }
                     
                     if let specialites = formateur.specialites, !specialites.isEmpty {
@@ -103,7 +113,7 @@ struct FormateurDetailView: View {
                                 Text("Spécialités")
                                     .font(.headline)
                             }
-                            Text(specialites)
+                            Text(specialites.joined(separator: ", "))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }
@@ -159,7 +169,7 @@ struct FormateurDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 Task {
-                    try? await viewModel.deleteFormateur(formateur)
+                    try? await viewModel.deleteFormateur(id: formateur.id)
                 }
             }
         } message: {
@@ -204,7 +214,13 @@ struct ContactActionButton: View {
                 prenom: "John",
                 email: "john@example.com",
                 telephone: "+33123456789",
-                exterieur: false
+                specialites: ["iOS", "Swift"],
+                tarifJournalier: 500.0,
+                adresse: "123 Main St",
+                ville: "Paris",
+                codePostal: "75001",
+                notes: "Expert iOS",
+                actif: true
             ),
             viewModel: FormateursViewModel()
         )

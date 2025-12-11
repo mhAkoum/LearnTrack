@@ -23,19 +23,19 @@ struct ClientDetailView: View {
                             .fill(Color.green.opacity(0.2))
                             .frame(width: 50, height: 50)
                             .overlay(
-                                Text(String(client.prenom.prefix(1)).uppercased())
+                                Text(String(client.nom.prefix(1)).uppercased())
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(.green)
                             )
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(client.fullName)
+                            Text(client.nom)
                                 .font(.title)
                                 .fontWeight(.bold)
                             
-                            if let entreprise = client.entreprise {
-                                Text(entreprise)
+                            if let ville = client.ville {
+                                Text(ville)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
@@ -106,8 +106,28 @@ struct ClientDetailView: View {
                         DetailRow(icon: "phone", title: "Téléphone", value: telephone)
                     }
                     
-                    if let entreprise = client.entreprise {
-                        DetailRow(icon: "building.2", title: "Entreprise", value: entreprise)
+                    if let ville = client.ville {
+                        DetailRow(icon: "mappin", title: "Ville", value: ville)
+                    }
+                    
+                    if let codePostal = client.codePostal {
+                        DetailRow(icon: "number", title: "Code Postal", value: codePostal)
+                    }
+                    
+                    if let siret = client.siret {
+                        DetailRow(icon: "building.2", title: "SIRET", value: siret)
+                    }
+                    
+                    if let contactNom = client.contactNom {
+                        DetailRow(icon: "person", title: "Contact", value: contactNom)
+                    }
+                    
+                    if let contactEmail = client.contactEmail {
+                        DetailRow(icon: "envelope", title: "Email Contact", value: contactEmail)
+                    }
+                    
+                    if let contactTelephone = client.contactTelephone {
+                        DetailRow(icon: "phone", title: "Téléphone Contact", value: contactTelephone)
                     }
                     
                     if let adresse = client.adresse {
@@ -164,7 +184,7 @@ struct ClientDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 Task {
-                    try? await viewModel.deleteClient(client)
+                    try? await viewModel.deleteClient(id: client.id)
                 }
             }
         } message: {
@@ -185,12 +205,19 @@ struct ClientDetailView: View {
     NavigationView {
         ClientDetailView(
             client: Client(
-                nom: "Doe",
-                prenom: "John",
-                email: "john@example.com",
+                id: 1,
+                nom: "TechCorp",
+                email: "contact@techcorp.com",
                 telephone: "+33123456789",
-                entreprise: "TechCorp",
-                adresse: "123 Main St, Paris"
+                adresse: "123 Main St",
+                ville: "Paris",
+                codePostal: "75001",
+                siret: "12345678901234",
+                contactNom: "John Doe",
+                contactEmail: "john@example.com",
+                contactTelephone: "+33123456789",
+                notes: "Important client",
+                actif: true
             ),
             viewModel: ClientsViewModel()
         )
