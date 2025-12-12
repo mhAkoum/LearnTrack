@@ -69,8 +69,9 @@ struct SessionDetailView: View {
                     // Présentiel/Distanciel
                     if let presentielDistanciel = session.presentielDistancielDisplay {
                         HStack(alignment: .top, spacing: 12) {
-                            Text(session.presentielEmoji)
+                            Image(systemName: session.presentielIcon)
                                 .font(.title3)
+                                .foregroundColor(.accentColor)
                                 .frame(width: 20)
                             
                             VStack(alignment: .leading, spacing: 4) {
@@ -115,7 +116,7 @@ struct SessionDetailView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("\(AppEmojis.sessions) Session")
+        .navigationTitle("Session")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             // Charger les noms de l'école, du client et du formateur si disponibles
@@ -188,23 +189,23 @@ struct SessionDetailView: View {
         } message: {
             Text("Les informations de la session ont été copiées dans le presse-papier")
         }
-        .alert("Delete Session", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert("Supprimer la session", isPresented: $showingDeleteAlert) {
+            Button("Annuler", role: .cancel) { }
+            Button("Supprimer", role: .destructive) {
                 Task {
                     try? await viewModel.deleteSession(id: session.id)
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this session? This action cannot be undone.")
+            Text("Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible.")
         }
     }
     
     private func sessionShareText() -> String {
-        var text = "📅 \(session.titre)\n\n"
+        var text = "\(session.titre)\n\n"
         
         // Date
-        text += "📆 Date: \(session.formattedDateDebut)"
+        text += "Date: \(session.formattedDateDebut)"
         if session.formattedDateDebut != session.formattedDateFin {
             text += " - \(session.formattedDateFin)"
         }
@@ -212,23 +213,23 @@ struct SessionDetailView: View {
         
         // Heures si disponibles
         if let heureDebut = session.heureDebut, let heureFin = session.heureFin {
-            text += "🕐 Heures: \(heureDebut) - \(heureFin)\n"
+            text += "Heures: \(heureDebut) - \(heureFin)\n"
         }
         
         // Lieu (nom de l'école si disponible)
         if let ecoleName = ecoleName {
-            text += "📍 Lieu: \(ecoleName)\n"
+            text += "Lieu: \(ecoleName)\n"
         } else if let ecoleId = session.ecoleId {
-            text += "📍 Lieu: École ID \(ecoleId)\n"
+            text += "Lieu: École ID \(ecoleId)\n"
         } else {
-            text += "📍 Lieu: À définir\n"
+            text += "Lieu: À définir\n"
         }
         
         // Tarifs
         if let prix = session.prix {
-            text += "💰 Tarif: \(String(format: "%.2f €", prix))\n"
+            text += "Tarif: \(String(format: "%.2f €", prix))\n"
         } else {
-            text += "💰 Tarif: Non défini\n"
+            text += "Tarif: Non défini\n"
         }
         
         return text

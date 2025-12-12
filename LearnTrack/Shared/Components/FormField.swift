@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FormField: View {
-    let emoji: String
+    let icon: String
     let title: String
     let placeholder: String
     @Binding var text: String
@@ -24,7 +24,8 @@ struct FormField: View {
                     .font(.headline)
                     .foregroundColor(color)
             } icon: {
-                Text(emoji)
+                Image(systemName: icon)
+                    .foregroundColor(color)
                     .font(.title3)
             }
             TextField(placeholder, text: $text)
@@ -38,7 +39,7 @@ struct FormField: View {
 }
 
 struct FormTextEditor: View {
-    let emoji: String
+    let icon: String
     let title: String
     @Binding var text: String
     var minHeight: CGFloat = 100
@@ -51,7 +52,8 @@ struct FormTextEditor: View {
                     .font(.headline)
                     .foregroundColor(color)
             } icon: {
-                Text(emoji)
+                Image(systemName: icon)
+                    .foregroundColor(color)
                     .font(.title3)
             }
             TextEditor(text: $text)
@@ -68,9 +70,9 @@ struct FormTextEditor: View {
 #Preview {
     Form {
         Section {
-            FormField(emoji: "👤", title: "Nom", placeholder: "Entrez le nom", text: .constant(""))
-            FormField(emoji: "📧", title: "Email", placeholder: "email@example.com", text: .constant(""), keyboardType: .emailAddress)
-            FormTextEditor(emoji: "📝", title: "Notes", text: .constant(""))
+            FormField(icon: AppIcons.person, title: "Nom", placeholder: "Entrez le nom", text: .constant(""))
+            FormField(icon: AppIcons.email, title: "Email", placeholder: "email@example.com", text: .constant(""), keyboardType: .emailAddress)
+            FormTextEditor(icon: AppIcons.notes, title: "Notes", text: .constant(""))
         }
     }
 }

@@ -40,57 +40,57 @@ struct FormateurFormView: View {
         NavigationView {
             Form {
                 Section {
-                    FormField(emoji: "👤", title: "Nom", placeholder: "Ex: Dupont", text: $nom, color: AppColors.formateurs)
-                    FormField(emoji: "👤", title: "Prénom", placeholder: "Ex: Jean", text: $prenom, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.person, title: "Nom", placeholder: "Ex: Dupont", text: $nom, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.person, title: "Prénom", placeholder: "Ex: Jean", text: $prenom, color: AppColors.formateurs)
                 } header: {
-                    Text("\(AppEmojis.formateurs) Informations personnelles")
+                    Label("Informations personnelles", systemImage: AppIcons.formateurs)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "jean.dupont@example.com", text: $email, keyboardType: .emailAddress, color: AppColors.formateurs, noAutocapitalization: true, disableAutocorrection: true)
+                    FormField(icon: AppIcons.email, title: "Email", placeholder: "jean.dupont@example.com", text: $email, keyboardType: .emailAddress, color: AppColors.formateurs, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.formateurs)
                 } header: {
-                    Text("\(AppEmojis.phone) Contact")
+                    Label("Contact", systemImage: AppIcons.phone)
                 }
                 
                 Section {
-                    FormField(emoji: "🎯", title: "Spécialités", placeholder: "iOS, Swift, UIKit (séparées par des virgules)", text: $specialites, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.star, title: "Spécialités", placeholder: "iOS, Swift, UIKit (séparées par des virgules)", text: $specialites, color: AppColors.formateurs)
                 } header: {
-                    Text("🎯 Spécialités")
+                    Label("Spécialités", systemImage: AppIcons.star)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.money, title: "Tarif journalier", placeholder: "Ex: 500", text: $tarifJournalier, keyboardType: .decimalPad, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.money, title: "Tarif journalier", placeholder: "Ex: 500", text: $tarifJournalier, keyboardType: .decimalPad, color: AppColors.formateurs)
                 } header: {
-                    Text("\(AppEmojis.money) Tarif")
+                    Label("Tarif", systemImage: AppIcons.money)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.formateurs)
-                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.formateurs)
-                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.formateurs)
+                    FormField(icon: AppIcons.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.formateurs)
                 } header: {
-                    Text("\(AppEmojis.location) Adresse")
+                    Label("Adresse", systemImage: AppIcons.location)
                 }
                 
                 Section {
-                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.formateurs)
+                    FormTextEditor(icon: AppIcons.notes, title: "Notes", text: $notes, color: AppColors.formateurs)
                 } header: {
-                    Text("\(AppEmojis.notes) Notes")
+                    Label("Notes", systemImage: AppIcons.notes)
                 }
             }
-            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Formateur" : "\(AppEmojis.add) Nouveau Formateur")
+            .navigationTitle(isEditMode ? "Modifier Formateur" : "Nouveau Formateur")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Annuler") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Enregistrer") {
                         saveFormateur()
                     }
                     .disabled(nom.isEmpty || prenom.isEmpty || email.isEmpty || viewModel.isLoading)
@@ -101,7 +101,7 @@ struct FormateurFormView: View {
                     loadFormateurData(formateur)
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") { }
             } message: {
                 Text(errorMessage)
@@ -128,13 +128,20 @@ struct FormateurFormView: View {
     private func saveFormateur() {
         // Validate
         guard !nom.isEmpty, !prenom.isEmpty, !email.isEmpty else {
-            errorMessage = "Nom, Prénom, and Email are required"
+            errorMessage = "Le nom, le prénom et l'email sont requis"
             showingError = true
             return
         }
         
         if !email.isValidEmail {
-            errorMessage = "Please enter a valid email address"
+            errorMessage = "Veuillez entrer une adresse email valide"
+            showingError = true
+            return
+        }
+        
+        // Validate phone number if provided
+        if !telephone.isEmpty && !telephone.isValidPhone {
+            errorMessage = "Le numéro de téléphone doit contenir exactement 10 chiffres"
             showingError = true
             return
         }

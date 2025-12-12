@@ -34,12 +34,12 @@ class ClientsViewModel: ObservableObject {
             }
         }
         
-        var emoji: String {
+        var icon: String {
             switch self {
-            case .tous: return "🔍"
-            case .actifs: return "✅"
-            case .inactifs: return "❌"
-            case .avecContact: return "👤"
+            case .tous: return AppIcons.search
+            case .actifs: return AppIcons.success
+            case .inactifs: return AppIcons.error
+            case .avecContact: return AppIcons.person
             }
         }
     }
@@ -87,7 +87,7 @@ class ClientsViewModel: ObservableObject {
             let response = try await apiService.getClients()
             self.clients = response
         } catch {
-            self.errorMessage = "Failed to load clients: \(error.localizedDescription)"
+            self.errorMessage = "Échec du chargement des clients : \(error.localizedDescription)"
         }
         
         isLoading = false
@@ -103,7 +103,7 @@ class ClientsViewModel: ObservableObject {
             // Refresh the list
             await fetchClients()
         } catch {
-            self.errorMessage = "Failed to create client: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la création du client : \(error.localizedDescription)"
             throw error
         }
         
@@ -120,7 +120,7 @@ class ClientsViewModel: ObservableObject {
             // Refresh the list
             await fetchClients()
         } catch {
-            self.errorMessage = "Failed to update client: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la mise à jour du client : \(error.localizedDescription)"
             throw error
         }
         
@@ -137,7 +137,7 @@ class ClientsViewModel: ObservableObject {
             // Refresh the list
             await fetchClients()
         } catch {
-            self.errorMessage = "Failed to delete client: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la suppression du client : \(error.localizedDescription)"
             throw error
         }
         

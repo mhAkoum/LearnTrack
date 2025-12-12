@@ -20,7 +20,7 @@ struct SessionFilterView: View {
                     // Tous
                     FilterChip(
                         title: "Tous",
-                        emoji: "🔍",
+                        icon: AppIcons.search,
                         isSelected: viewModel.selectedFilter == nil && selectedStatusFilter == nil && selectedModeFilter == nil,
                         color: AppColors.sessions
                     ) {
@@ -32,7 +32,7 @@ struct SessionFilterView: View {
                     // Filtres par statut
                     FilterChip(
                         title: "Planifié",
-                        emoji: "📋",
+                        icon: "calendar.badge.clock",
                         isSelected: selectedStatusFilter == "planifié",
                         color: AppColors.sessions
                     ) {
@@ -45,7 +45,7 @@ struct SessionFilterView: View {
                     
                     FilterChip(
                         title: "En cours",
-                        emoji: "🔄",
+                        icon: "arrow.triangle.2.circlepath",
                         isSelected: selectedStatusFilter == "en cours",
                         color: AppColors.sessions
                     ) {
@@ -58,7 +58,7 @@ struct SessionFilterView: View {
                     
                     FilterChip(
                         title: "Terminé",
-                        emoji: "✅",
+                        icon: "checkmark.circle.fill",
                         isSelected: selectedStatusFilter == "terminé",
                         color: AppColors.sessions
                     ) {
@@ -77,7 +77,7 @@ struct SessionFilterView: View {
                 HStack(spacing: 12) {
                     FilterChip(
                         title: "Présentiel",
-                        emoji: "🏢",
+                        icon: AppIcons.presentiel,
                         isSelected: selectedModeFilter == "Présentiel",
                         color: AppColors.sessions
                     ) {
@@ -90,7 +90,7 @@ struct SessionFilterView: View {
                     
                     FilterChip(
                         title: "Distanciel",
-                        emoji: "💻",
+                        icon: AppIcons.distanciel,
                         isSelected: selectedModeFilter == "Distanciel",
                         color: AppColors.sessions
                     ) {

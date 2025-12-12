@@ -92,7 +92,7 @@ class SessionsViewModel: ObservableObject {
             let response = try await apiService.getSessions()
             self.sessions = response
         } catch {
-            self.errorMessage = "Failed to load sessions: \(error.localizedDescription)"
+            self.errorMessage = "Échec du chargement des sessions : \(error.localizedDescription)"
         }
         
         isLoading = false
@@ -108,7 +108,7 @@ class SessionsViewModel: ObservableObject {
             // Refresh the list
             await fetchSessions()
         } catch {
-            self.errorMessage = "Failed to create session: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la création de la session : \(error.localizedDescription)"
             throw error
         }
         
@@ -125,7 +125,7 @@ class SessionsViewModel: ObservableObject {
             // Refresh the list
             await fetchSessions()
         } catch {
-            self.errorMessage = "Failed to update session: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la mise à jour de la session : \(error.localizedDescription)"
             throw error
         }
         
@@ -142,7 +142,7 @@ class SessionsViewModel: ObservableObject {
             // Refresh the list
             await fetchSessions()
         } catch {
-            self.errorMessage = "Failed to delete session: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la suppression de la session : \(error.localizedDescription)"
             throw error
         }
         

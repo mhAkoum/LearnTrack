@@ -18,7 +18,7 @@ struct FilterView: View {
                 // Tous
                 FilterChip(
                     title: "Tous",
-                    emoji: "🔍",
+                    icon: AppIcons.search,
                     isSelected: selectedFilter == nil,
                     color: color
                 ) {
@@ -29,7 +29,7 @@ struct FilterView: View {
                 ForEach(filters, id: \.id) { filter in
                     FilterChip(
                         title: filter.title,
-                        emoji: filter.emoji,
+                        icon: filter.icon,
                         isSelected: selectedFilter?.id == filter.id,
                         color: color
                     ) {
@@ -45,7 +45,7 @@ struct FilterView: View {
 
 struct FilterChip: View {
     let title: String
-    let emoji: String
+    let icon: String
     let isSelected: Bool
     let color: Color
     let action: () -> Void
@@ -53,7 +53,7 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Text(emoji)
+                Image(systemName: icon)
                     .font(.caption)
                 Text(title)
                     .font(.subheadline)
@@ -71,13 +71,13 @@ struct FilterChip: View {
 struct FilterOption: Identifiable {
     let id: String
     let title: String
-    let emoji: String
+    let icon: String
     let value: Any?
     
-    init(id: String, title: String, emoji: String, value: Any? = nil) {
+    init(id: String, title: String, icon: String, value: Any? = nil) {
         self.id = id
         self.title = title
-        self.emoji = emoji
+        self.icon = icon
         self.value = value
     }
 }

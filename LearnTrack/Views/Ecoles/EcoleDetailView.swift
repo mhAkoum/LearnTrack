@@ -12,6 +12,8 @@ struct EcoleDetailView: View {
     @ObservedObject var viewModel: EcolesViewModel
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
+    @State private var showingCopyConfirmation = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         ScrollView {
@@ -47,7 +49,7 @@ struct EcoleDetailView: View {
                         if let telephone = ecole.telephone {
                             ContactActionButton(
                                 icon: "phone.fill",
-                                title: "Call",
+                                title: "Appeler",
                                 color: .green,
                                 action: {
                                     if let url = URL(string: "tel://\(telephone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))") {
@@ -136,13 +138,28 @@ struct EcoleDetailView: View {
                     Button(action: {
                         showingEdit = true
                     }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label("Modifier", systemImage: "pencil")
+                    }
+                    
+                    Button(action: {
+                        // Copier dans le presse-papier
+                        let text = ecoleShareText()
+                        ClipboardManager.shared.copyToClipboard(text)
+                        showingCopyConfirmation = true
+                    }) {
+                        Label("Copier", systemImage: "doc.on.doc")
+                    }
+                    
+                    Button(action: {
+                        showingShareSheet = true
+                    }) {
+                        Label("Partager", systemImage: "square.and.arrow.up")
                     }
                     
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
-                        Label("Delete", systemImage: "trash")
+                        Label("Supprimer", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -152,16 +169,54 @@ struct EcoleDetailView: View {
         .sheet(isPresented: $showingEdit) {
             EcoleFormView(viewModel: viewModel, ecole: ecole)
         }
-        .alert("Delete École", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [ecoleShareText()])
+        }
+        .alert("Copié !", isPresented: $showingCopyConfirmation) {
+            Button("OK") { }
+        } message: {
+            Text("Les informations de l'école ont été copiées dans le presse-papier")
+        }
+        .alert("Supprimer l'école", isPresented: $showingDeleteAlert) {
+            Button("Annuler", role: .cancel) { }
+            Button("Supprimer", role: .destructive) {
                 Task {
                     try? await viewModel.deleteEcole(id: ecole.id)
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this école? This action cannot be undone.")
+            Text("Êtes-vous sûr de vouloir supprimer cette école ? Cette action est irréversible.")
         }
+    }
+    
+    private func ecoleShareText() -> String {
+        var text = "\(ecole.nom)\n\n"
+        if let responsableNom = ecole.responsableNom {
+            text += "Responsable: \(responsableNom)\n"
+        }
+        if let email = ecole.email {
+            text += "Email: \(email)\n"
+        }
+        if let telephone = ecole.telephone {
+            text += "Téléphone: \(telephone)\n"
+        }
+        if let adresse = ecole.adresse {
+            text += "Adresse: \(adresse)"
+            if let ville = ecole.ville {
+                text += ", \(ville)"
+            }
+            if let codePostal = ecole.codePostal {
+                text += " \(codePostal)"
+            }
+            text += "\n"
+        }
+        if let capacite = ecole.capacite {
+            text += "Capacité: \(capacite)\n"
+        }
+        if let notes = ecole.notes, !notes.isEmpty {
+            text += "Notes: \(notes)\n"
+        }
+        return text
     }
 }
 

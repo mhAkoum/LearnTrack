@@ -34,12 +34,12 @@ class FormateursViewModel: ObservableObject {
             }
         }
         
-        var emoji: String {
+        var icon: String {
             switch self {
-            case .tous: return "🔍"
-            case .actifs: return "✅"
-            case .inactifs: return "❌"
-            case .avecSpecialites: return "🎯"
+            case .tous: return AppIcons.search
+            case .actifs: return AppIcons.success
+            case .inactifs: return AppIcons.error
+            case .avecSpecialites: return AppIcons.star
             }
         }
     }
@@ -88,7 +88,7 @@ class FormateursViewModel: ObservableObject {
             let response = try await apiService.getFormateurs()
             self.formateurs = response
         } catch {
-            self.errorMessage = "Failed to load formateurs: \(error.localizedDescription)"
+            self.errorMessage = "Échec du chargement des formateurs : \(error.localizedDescription)"
         }
         
         isLoading = false
@@ -104,7 +104,7 @@ class FormateursViewModel: ObservableObject {
             // Refresh the list
             await fetchFormateurs()
         } catch {
-            self.errorMessage = "Failed to create formateur: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la création du formateur : \(error.localizedDescription)"
             throw error
         }
         
@@ -121,7 +121,7 @@ class FormateursViewModel: ObservableObject {
             // Refresh the list
             await fetchFormateurs()
         } catch {
-            self.errorMessage = "Failed to update formateur: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la mise à jour du formateur : \(error.localizedDescription)"
             throw error
         }
         
@@ -138,7 +138,7 @@ class FormateursViewModel: ObservableObject {
             // Refresh the list
             await fetchFormateurs()
         } catch {
-            self.errorMessage = "Failed to delete formateur: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la suppression du formateur : \(error.localizedDescription)"
             throw error
         }
         

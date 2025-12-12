@@ -39,51 +39,51 @@ struct EcoleFormView: View {
         NavigationView {
             Form {
                 Section {
-                    FormField(emoji: AppEmojis.ecoles, title: "Nom de l'école", placeholder: "Ex: EPITA", text: $nom, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.ecoles, title: "Nom de l'école", placeholder: "Ex: EPITA", text: $nom, color: AppColors.ecoles)
                 } header: {
-                    Text("\(AppEmojis.ecoles) Informations de l'école")
+                    Label("Informations de l'école", systemImage: AppIcons.ecoles)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 14-16 rue Voltaire", text: $adresse, color: AppColors.ecoles)
-                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.ecoles)
-                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 94270", text: $codePostal, keyboardType: .numberPad, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.location, title: "Adresse", placeholder: "Ex: 14-16 rue Voltaire", text: $adresse, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.location, title: "Code Postal", placeholder: "Ex: 94270", text: $codePostal, keyboardType: .numberPad, color: AppColors.ecoles)
                 } header: {
-                    Text("\(AppEmojis.location) Adresse")
+                    Label("Adresse", systemImage: AppIcons.location)
                 }
                 
                 Section {
-                    FormField(emoji: "👤", title: "Responsable", placeholder: "Ex: Jean Dupont", text: $responsableNom, color: AppColors.ecoles)
-                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "contact@ecole.fr", text: $email, keyboardType: .emailAddress, color: AppColors.ecoles, noAutocapitalization: true, disableAutocorrection: true)
+                    FormField(icon: AppIcons.person, title: "Responsable", placeholder: "Ex: Jean Dupont", text: $responsableNom, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.email, title: "Email", placeholder: "contact@ecole.fr", text: $email, keyboardType: .emailAddress, color: AppColors.ecoles, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.ecoles)
                 } header: {
-                    Text("\(AppEmojis.phone) Contact")
+                    Label("Contact", systemImage: AppIcons.phone)
                 }
                 
                 Section {
-                    FormField(emoji: "👥", title: "Capacité", placeholder: "Ex: 100", text: $capacite, keyboardType: .numberPad, color: AppColors.ecoles)
+                    FormField(icon: AppIcons.participants, title: "Capacité", placeholder: "Ex: 100", text: $capacite, keyboardType: .numberPad, color: AppColors.ecoles)
                 } header: {
-                    Text("👥 Informations complémentaires")
+                    Label("Informations complémentaires", systemImage: AppIcons.participants)
                 }
                 
                 Section {
-                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.ecoles)
+                    FormTextEditor(icon: AppIcons.notes, title: "Notes", text: $notes, color: AppColors.ecoles)
                 } header: {
-                    Text("\(AppEmojis.notes) Notes")
+                    Label("Notes", systemImage: AppIcons.notes)
                 }
             }
-            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier École" : "\(AppEmojis.add) Nouvelle École")
+            .navigationTitle(isEditMode ? "Modifier École" : "Nouvelle École")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Annuler") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Enregistrer") {
                         saveEcole()
                     }
                     .disabled(nom.isEmpty || viewModel.isLoading)
@@ -94,7 +94,7 @@ struct EcoleFormView: View {
                     loadEcoleData(ecole)
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") { }
             } message: {
                 Text(errorMessage)
@@ -120,13 +120,20 @@ struct EcoleFormView: View {
     private func saveEcole() {
         // Validate
         guard !nom.isEmpty else {
-            errorMessage = "Nom de l'école is required"
+            errorMessage = "Le nom de l'école est requis"
             showingError = true
             return
         }
         
         if !email.isEmpty && !email.isValidEmail {
-            errorMessage = "Please enter a valid email address"
+            errorMessage = "Veuillez entrer une adresse email valide"
+            showingError = true
+            return
+        }
+        
+        // Validate phone number if provided
+        if !telephone.isEmpty && !telephone.isValidPhone {
+            errorMessage = "Le numéro de téléphone doit contenir exactement 10 chiffres"
             showingError = true
             return
         }

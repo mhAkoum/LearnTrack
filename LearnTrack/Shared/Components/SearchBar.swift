@@ -14,7 +14,8 @@ struct SearchBar: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            Text(AppEmojis.search)
+            Image(systemName: AppIcons.search)
+                .foregroundColor(AppColors.primary)
                 .font(.title3)
             
             TextField(placeholder, text: $text)

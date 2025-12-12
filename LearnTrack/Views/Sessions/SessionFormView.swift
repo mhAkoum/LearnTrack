@@ -47,7 +47,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text("📋")
+                            Image(systemName: "doc.text.fill")
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextField("Ex: Formation iOS", text: $titre)
@@ -55,7 +56,7 @@ struct SessionFormView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("\(AppEmojis.sessions) Informations principales")
+                    Label("Informations principales", systemImage: AppIcons.sessions)
                 }
                 
                 Section {
@@ -65,7 +66,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.notes)
+                            Image(systemName: AppIcons.notes)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextEditor(text: $description)
@@ -85,7 +87,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.calendar)
+                            Image(systemName: AppIcons.calendar)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         DatePicker("", selection: $dateDebut, displayedComponents: [.date])
@@ -99,7 +102,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.calendar)
+                            Image(systemName: AppIcons.calendar)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         DatePicker("", selection: $dateFin, displayedComponents: [.date])
@@ -107,7 +111,7 @@ struct SessionFormView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("\(AppEmojis.calendar) Dates")
+                    Label("Dates", systemImage: AppIcons.calendar)
                 }
                 
                 Section {
@@ -117,7 +121,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.clock)
+                            Image(systemName: AppIcons.clock)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         DatePicker("", selection: $heureDebut, displayedComponents: [.hourAndMinute])
@@ -131,7 +136,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.clock)
+                            Image(systemName: AppIcons.clock)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         DatePicker("", selection: $heureFin, displayedComponents: [.hourAndMinute])
@@ -139,7 +145,7 @@ struct SessionFormView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("\(AppEmojis.clock) Heures")
+                    Label("Heures", systemImage: AppIcons.clock)
                 }
                 
                 Section {
@@ -149,18 +155,19 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text("🏢")
+                            Image(systemName: AppIcons.presentiel)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         Picker("Mode", selection: $presentielDistanciel) {
-                            Text("🏢 Présentiel").tag("Présentiel")
-                            Text("💻 Distanciel").tag("Distanciel")
+                            Label("Présentiel", systemImage: AppIcons.presentiel).tag("Présentiel")
+                            Label("Distanciel", systemImage: AppIcons.distanciel).tag("Distanciel")
                         }
                         .pickerStyle(.segmented)
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("🏢 Mode de formation")
+                    Label("Mode de formation", systemImage: AppIcons.presentiel)
                 }
                 
                 Section {
@@ -170,7 +177,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text("📊")
+                            Image(systemName: AppIcons.status)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextField("Ex: planifié", text: $statut)
@@ -184,7 +192,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.money)
+                            Image(systemName: AppIcons.money)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextField("Ex: 5000", text: $prix)
@@ -199,7 +208,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text("👥")
+                            Image(systemName: AppIcons.participants)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextField("Ex: 20", text: $nbParticipants)
@@ -208,7 +218,7 @@ struct SessionFormView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("ℹ️ Informations complémentaires")
+                    Label("Informations complémentaires", systemImage: AppIcons.info)
                 }
                 
                 Section {
@@ -218,7 +228,8 @@ struct SessionFormView: View {
                                 .font(.headline)
                                 .foregroundColor(AppColors.sessions)
                         } icon: {
-                            Text(AppEmojis.notes)
+                            Image(systemName: AppIcons.notes)
+                                .foregroundColor(AppColors.sessions)
                                 .font(.title3)
                         }
                         TextEditor(text: $notes)
@@ -230,20 +241,20 @@ struct SessionFormView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("\(AppEmojis.notes) Notes")
+                    Label("Notes", systemImage: AppIcons.notes)
                 }
             }
-            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Session" : "\(AppEmojis.add) Nouvelle Session")
+            .navigationTitle(isEditMode ? "Modifier Session" : "Nouvelle Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Annuler") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Enregistrer") {
                         saveSession()
                     }
                     .disabled(titre.isEmpty || viewModel.isLoading)
@@ -254,7 +265,7 @@ struct SessionFormView: View {
                     loadSessionData(session)
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") { }
             } message: {
                 Text(errorMessage)
@@ -324,13 +335,13 @@ struct SessionFormView: View {
     private func saveSession() {
         // Validate
         guard !titre.isEmpty else {
-            errorMessage = "Titre is required"
+            errorMessage = "Le titre est requis"
             showingError = true
             return
         }
         
         guard dateFin >= dateDebut else {
-            errorMessage = "End date must be after or equal to start date"
+            errorMessage = "La date de fin doit être après ou égale à la date de début"
             showingError = true
             return
         }

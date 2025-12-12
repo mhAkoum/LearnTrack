@@ -24,7 +24,7 @@ struct ClientsListView: View {
                     selectedFilter: Binding(
                         get: {
                             if let filter = viewModel.selectedFilter {
-                                return FilterOption(id: filter.rawValue, title: filter.title, emoji: filter.emoji)
+                                return FilterOption(id: filter.rawValue, title: filter.title, icon: filter.icon)
                             }
                             return nil
                         },
@@ -37,7 +37,7 @@ struct ClientsListView: View {
                         }
                     ),
                     filters: ClientsViewModel.FilterType.allCases.filter { $0 != .tous }.map {
-                        FilterOption(id: $0.rawValue, title: $0.title, emoji: $0.emoji)
+                        FilterOption(id: $0.rawValue, title: $0.title, icon: $0.icon)
                     },
                     color: AppColors.clients
                 )
@@ -61,7 +61,7 @@ struct ClientsListView: View {
                     }
                 }
             }
-            .navigationTitle("\(AppEmojis.clients) Clients")
+            .navigationTitle("Clients")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -88,7 +88,7 @@ struct ClientsListView: View {
                     showingError = false
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
                     showingError = false
@@ -122,8 +122,9 @@ struct ClientRowView: View {
                     )
                     .frame(width: 50, height: 50)
                 
-                Text(client.actif ? "👥" : "😴")
+                Image(systemName: client.actif ? AppIcons.clients : "building.2.crop.circle.badge.xmark")
                     .font(.title2)
+                    .foregroundColor(client.actif ? AppColors.clients : .gray)
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -133,14 +134,15 @@ struct ClientRowView: View {
                         .foregroundColor(.primary)
                     
                     if client.actif {
-                        Text(AppEmojis.star)
+                        Image(systemName: AppIcons.star)
                             .font(.caption)
+                            .foregroundColor(AppColors.clients)
                     }
                 }
                 
                 if let ville = client.ville {
                     HStack(spacing: 4) {
-                        Text(AppEmojis.location)
+                        Image(systemName: AppIcons.location)
                             .font(.caption2)
                         Text(ville)
                             .font(.caption)
@@ -150,7 +152,7 @@ struct ClientRowView: View {
                 
                 if let email = client.email {
                     HStack(spacing: 4) {
-                        Text(AppEmojis.email)
+                        Image(systemName: AppIcons.email)
                             .font(.caption2)
                         Text(email)
                             .font(.caption)
@@ -180,15 +182,16 @@ struct ClientRowView: View {
 struct EmptyClientsView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("👥")
-                .font(.system(size: 80))
+            Image(systemName: AppIcons.clients)
+                .font(.system(size: 60))
+                .foregroundColor(AppColors.clients.opacity(0.5))
             
             Text("Aucun client")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(AppColors.clients)
             
-            Text("Appuyez sur \(AppEmojis.add) pour ajouter un nouveau client")
+            Text("Appuyez sur le bouton + pour ajouter un nouveau client")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

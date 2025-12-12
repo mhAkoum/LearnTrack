@@ -41,7 +41,7 @@ struct SessionsListView: View {
                     }
                 }
             }
-            .navigationTitle("\(AppEmojis.sessions) Sessions")
+            .navigationTitle("Sessions")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -69,7 +69,7 @@ struct SessionsListView: View {
                     showingError = false
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
                     showingError = false
@@ -96,10 +96,12 @@ struct SessionRowView: View {
                     .frame(width: 50, height: 50)
                 
                 VStack(spacing: 2) {
-                    Text(statusEmoji(for: session.statut))
+                    Image(systemName: statusIcon(for: session.statut))
                         .font(.title3)
-                    Text(session.presentielEmoji)
+                        .foregroundColor(statusColor(for: session.statut))
+                    Image(systemName: session.presentielIcon)
                         .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             
@@ -122,7 +124,7 @@ struct SessionRowView: View {
                     if let prix = session.prix {
                         Spacer()
                         HStack(spacing: 4) {
-                            Text(AppEmojis.money)
+                            Image(systemName: AppIcons.money)
                                 .font(.caption2)
                             Text(String(format: "%.0f €", prix))
                                 .font(.caption)
@@ -164,18 +166,18 @@ struct SessionRowView: View {
         }
     }
     
-    private func statusEmoji(for statut: String) -> String {
+    private func statusIcon(for statut: String) -> String {
         switch statut.lowercased() {
         case "planifié", "planifie":
-            return "📋"
+            return "calendar.badge.clock"
         case "en cours", "encours":
-            return "🔄"
+            return "arrow.triangle.2.circlepath"
         case "terminé", "termine":
-            return "✅"
+            return "checkmark.circle.fill"
         case "annulé", "annule":
-            return "❌"
+            return "xmark.circle.fill"
         default:
-            return "📅"
+            return "calendar"
         }
     }
 }
@@ -186,15 +188,16 @@ struct SessionRowView: View {
 struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("📅")
-                .font(.system(size: 80))
+            Image(systemName: AppIcons.sessions)
+                .font(.system(size: 60))
+                .foregroundColor(AppColors.sessions.opacity(0.5))
             
             Text("Aucune session")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(AppColors.sessions)
             
-            Text("Appuyez sur \(AppEmojis.add) pour créer votre première session")
+            Text("Appuyez sur le bouton + pour créer votre première session")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

@@ -24,7 +24,7 @@ struct FormateursListView: View {
                     selectedFilter: Binding(
                         get: {
                             if let filter = viewModel.selectedFilter {
-                                return FilterOption(id: filter.rawValue, title: filter.title, emoji: filter.emoji)
+                                return FilterOption(id: filter.rawValue, title: filter.title, icon: filter.icon)
                             }
                             return nil
                         },
@@ -37,7 +37,7 @@ struct FormateursListView: View {
                         }
                     ),
                     filters: FormateursViewModel.FilterType.allCases.filter { $0 != .tous }.map {
-                        FilterOption(id: $0.rawValue, title: $0.title, emoji: $0.emoji)
+                        FilterOption(id: $0.rawValue, title: $0.title, icon: $0.icon)
                     },
                     color: AppColors.formateurs
                 )
@@ -61,7 +61,7 @@ struct FormateursListView: View {
                     }
                 }
             }
-            .navigationTitle("\(AppEmojis.formateurs) Formateurs")
+            .navigationTitle("Formateurs")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -90,7 +90,7 @@ struct FormateursListView: View {
                     showingError = false
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
                     showingError = false
@@ -124,8 +124,9 @@ struct FormateurRowView: View {
                     )
                     .frame(width: 50, height: 50)
                 
-                Text(formateur.actif ? "👨‍🏫" : "😴")
+                Image(systemName: formateur.actif ? AppIcons.formateurs : "person.crop.circle.badge.xmark")
                     .font(.title2)
+                    .foregroundColor(formateur.actif ? AppColors.formateurs : .gray)
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -135,8 +136,9 @@ struct FormateurRowView: View {
                         .foregroundColor(.primary)
                     
                     if formateur.actif {
-                        Text(AppEmojis.star)
+                        Image(systemName: AppIcons.star)
                             .font(.caption)
+                            .foregroundColor(AppColors.formateurs)
                     }
                 }
                 
@@ -145,7 +147,7 @@ struct FormateurRowView: View {
                         Text(formateur.email)
                             .font(.caption)
                     } icon: {
-                        Text(AppEmojis.email)
+                        Image(systemName: AppIcons.email)
                             .font(.caption2)
                     }
                     .foregroundColor(.secondary)
@@ -153,7 +155,7 @@ struct FormateurRowView: View {
                 
                 if let telephone = formateur.telephone {
                     HStack(spacing: 4) {
-                        Text(AppEmojis.phone)
+                        Image(systemName: AppIcons.phone)
                             .font(.caption2)
                         Text(telephone)
                             .font(.caption)
@@ -204,15 +206,16 @@ struct FormateurRowView: View {
 struct EmptyFormateursView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("👨‍🏫")
-                .font(.system(size: 80))
+            Image(systemName: AppIcons.formateurs)
+                .font(.system(size: 60))
+                .foregroundColor(AppColors.formateurs.opacity(0.5))
             
             Text("Aucun formateur")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(AppColors.formateurs)
             
-            Text("Appuyez sur \(AppEmojis.add) pour ajouter votre premier formateur")
+            Text("Appuyez sur le bouton + pour ajouter votre premier formateur")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

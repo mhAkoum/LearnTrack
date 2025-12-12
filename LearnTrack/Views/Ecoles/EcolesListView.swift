@@ -38,7 +38,7 @@ struct EcolesListView: View {
                     }
                 }
             }
-            .navigationTitle("\(AppEmojis.ecoles) Écoles")
+            .navigationTitle("Écoles")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -65,7 +65,7 @@ struct EcolesListView: View {
                     showingError = false
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") {
                     viewModel.errorMessage = nil
                     showingError = false
@@ -99,8 +99,9 @@ struct EcoleRowView: View {
                     )
                     .frame(width: 50, height: 50)
                 
-                Text(ecole.actif ? "🏫" : "🏚️")
+                Image(systemName: ecole.actif ? AppIcons.ecoles : "graduationcap.circle.badge.xmark")
                     .font(.title2)
+                    .foregroundColor(ecole.actif ? AppColors.ecoles : .gray)
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -110,14 +111,15 @@ struct EcoleRowView: View {
                         .foregroundColor(.primary)
                     
                     if ecole.actif {
-                        Text(AppEmojis.star)
+                        Image(systemName: AppIcons.star)
                             .font(.caption)
+                            .foregroundColor(AppColors.ecoles)
                     }
                 }
                 
                 if let responsableNom = ecole.responsableNom {
                     HStack(spacing: 4) {
-                        Text("👤")
+                        Image(systemName: AppIcons.person)
                             .font(.caption2)
                         Text(responsableNom)
                             .font(.caption)
@@ -127,7 +129,7 @@ struct EcoleRowView: View {
                 
                 if let email = ecole.email {
                     HStack(spacing: 4) {
-                        Text(AppEmojis.email)
+                        Image(systemName: AppIcons.email)
                             .font(.caption2)
                         Text(email)
                             .font(.caption)
@@ -137,7 +139,7 @@ struct EcoleRowView: View {
                 
                 if let capacite = ecole.capacite {
                     HStack(spacing: 4) {
-                        Text("👥")
+                        Image(systemName: AppIcons.participants)
                             .font(.caption2)
                         Text("Capacité: \(capacite)")
                             .font(.caption)
@@ -167,15 +169,16 @@ struct EcoleRowView: View {
 struct EmptyEcolesView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("🏫")
-                .font(.system(size: 80))
+            Image(systemName: AppIcons.ecoles)
+                .font(.system(size: 60))
+                .foregroundColor(AppColors.ecoles.opacity(0.5))
             
             Text("Aucune école")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(AppColors.ecoles)
             
-            Text("Appuyez sur \(AppEmojis.add) pour ajouter une nouvelle école")
+            Text("Appuyez sur le bouton + pour ajouter une nouvelle école")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

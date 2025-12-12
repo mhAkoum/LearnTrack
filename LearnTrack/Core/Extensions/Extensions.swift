@@ -40,9 +40,19 @@ extension String {
     }
     
     var isValidPhone: Bool {
-        let phoneRegex = "^[+]?[0-9]{10,15}$"
+        // Nettoyer le numéro (enlever espaces, tirets, parenthèses, points, +)
+        let cleaned = self
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: "+", with: "")
+        
+        // Vérifier qu'il contient exactement 10 chiffres
+        let phoneRegex = "^[0-9]{10}$"
         let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-        return phonePredicate.evaluate(with: self.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))
+        return phonePredicate.evaluate(with: cleaned)
     }
 }
 

@@ -43,7 +43,7 @@ class EcolesViewModel: ObservableObject {
             let response = try await apiService.getEcoles()
             self.ecoles = response
         } catch {
-            self.errorMessage = "Failed to load ecoles: \(error.localizedDescription)"
+            self.errorMessage = "Échec du chargement des écoles : \(error.localizedDescription)"
         }
         
         isLoading = false
@@ -59,7 +59,7 @@ class EcolesViewModel: ObservableObject {
             // Refresh the list
             await fetchEcoles()
         } catch {
-            self.errorMessage = "Failed to create ecole: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la création de l'école : \(error.localizedDescription)"
             throw error
         }
         
@@ -76,7 +76,7 @@ class EcolesViewModel: ObservableObject {
             // Refresh the list
             await fetchEcoles()
         } catch {
-            self.errorMessage = "Failed to update ecole: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la mise à jour de l'école : \(error.localizedDescription)"
             throw error
         }
         
@@ -93,7 +93,7 @@ class EcolesViewModel: ObservableObject {
             // Refresh the list
             await fetchEcoles()
         } catch {
-            self.errorMessage = "Failed to delete ecole: \(error.localizedDescription)"
+            self.errorMessage = "Échec de la suppression de l'école : \(error.localizedDescription)"
             throw error
         }
         

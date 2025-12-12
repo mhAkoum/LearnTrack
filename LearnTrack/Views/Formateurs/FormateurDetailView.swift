@@ -13,6 +13,7 @@ struct FormateurDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
     @State private var showingCopyConfirmation = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         ScrollView {
@@ -44,7 +45,7 @@ struct FormateurDetailView: View {
                         if let telephone = formateur.telephone {
                             ContactActionButton(
                                 icon: "phone.fill",
-                                title: "Call",
+                                title: "Appeler",
                                 color: .green,
                                 action: {
                                     openPhoneApp(phoneNumber: telephone)
@@ -156,6 +157,12 @@ struct FormateurDetailView: View {
                         Label("Copier", systemImage: "doc.on.doc")
                     }
                     
+                    Button(action: {
+                        showingShareSheet = true
+                    }) {
+                        Label("Partager", systemImage: "square.and.arrow.up")
+                    }
+                    
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
@@ -174,15 +181,18 @@ struct FormateurDetailView: View {
         .sheet(isPresented: $showingEdit) {
             FormateurFormView(viewModel: viewModel, formateur: formateur)
         }
-        .alert("Delete Formateur", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [formateurShareText()])
+        }
+        .alert("Supprimer le formateur", isPresented: $showingDeleteAlert) {
+            Button("Annuler", role: .cancel) { }
+            Button("Supprimer", role: .destructive) {
                 Task {
                     try? await viewModel.deleteFormateur(id: formateur.id)
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this formateur? This action cannot be undone.")
+            Text("Êtes-vous sûr de vouloir supprimer ce formateur ? Cette action est irréversible.")
         }
     }
     
@@ -304,19 +314,19 @@ struct FormateurDetailView: View {
     }
     
     private func formateurShareText() -> String {
-        var text = "👨‍🏫 \(formateur.fullName)\n\n"
-        text += "\(AppEmojis.email) Email: \(formateur.email)\n"
+        var text = "\(formateur.fullName)\n\n"
+        text += "Email: \(formateur.email)\n"
         if let telephone = formateur.telephone {
-            text += "\(AppEmojis.phone) Téléphone: \(telephone)\n"
+            text += "Téléphone: \(telephone)\n"
         }
         if let specialites = formateur.specialites, !specialites.isEmpty {
-            text += "🎯 Spécialités: \(specialites.joined(separator: ", "))\n"
+            text += "Spécialités: \(specialites.joined(separator: ", "))\n"
         }
         if let tarif = formateur.tarifJournalier {
-            text += "\(AppEmojis.money) Tarif journalier: \(String(format: "%.2f €", tarif))\n"
+            text += "Tarif journalier: \(String(format: "%.2f €", tarif))\n"
         }
         if let adresse = formateur.adresse {
-            text += "\(AppEmojis.location) Adresse: \(adresse)"
+            text += "Adresse: \(adresse)"
             if let ville = formateur.ville {
                 text += ", \(ville)"
             }

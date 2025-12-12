@@ -13,6 +13,7 @@ struct ClientDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
     @State private var showingCopyConfirmation = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         ScrollView {
@@ -56,7 +57,7 @@ struct ClientDetailView: View {
                         if let telephone = client.telephone {
                             ContactActionButton(
                                 icon: "phone.fill",
-                                title: "Call",
+                                title: "Appeler",
                                 color: .green,
                                 action: {
                                     if let url = URL(string: "tel://\(telephone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))") {
@@ -83,7 +84,7 @@ struct ClientDetailView: View {
                         if let adresse = client.adresse, !adresse.isEmpty {
                             ContactActionButton(
                                 icon: "map.fill",
-                                title: "Open in Maps",
+                                title: "Ouvrir dans Plans",
                                 color: .red,
                                 action: {
                                     openAddressInMaps(adresse)
@@ -177,6 +178,12 @@ struct ClientDetailView: View {
                         Label("Copier", systemImage: "doc.on.doc")
                     }
                     
+                    Button(action: {
+                        showingShareSheet = true
+                    }) {
+                        Label("Partager", systemImage: "square.and.arrow.up")
+                    }
+                    
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
@@ -195,15 +202,18 @@ struct ClientDetailView: View {
         .sheet(isPresented: $showingEdit) {
             ClientFormView(viewModel: viewModel, client: client)
         }
-        .alert("Delete Client", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [clientShareText()])
+        }
+        .alert("Supprimer le client", isPresented: $showingDeleteAlert) {
+            Button("Annuler", role: .cancel) { }
+            Button("Supprimer", role: .destructive) {
                 Task {
                     try? await viewModel.deleteClient(id: client.id)
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this client? This action cannot be undone.")
+            Text("Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.")
         }
     }
     
@@ -216,15 +226,15 @@ struct ClientDetailView: View {
     }
     
     private func clientShareText() -> String {
-        var text = "\(AppEmojis.clients) \(client.nom)\n\n"
+        var text = "\(client.nom)\n\n"
         if let email = client.email {
-            text += "\(AppEmojis.email) Email: \(email)\n"
+            text += "Email: \(email)\n"
         }
         if let telephone = client.telephone {
-            text += "\(AppEmojis.phone) Téléphone: \(telephone)\n"
+            text += "Téléphone: \(telephone)\n"
         }
         if let adresse = client.adresse {
-            text += "\(AppEmojis.location) Adresse: \(adresse)"
+            text += "Adresse: \(adresse)"
             if let ville = client.ville {
                 text += ", \(ville)"
             }
@@ -234,10 +244,10 @@ struct ClientDetailView: View {
             text += "\n"
         }
         if let siret = client.siret {
-            text += "🏢 SIRET: \(siret)\n"
+            text += "SIRET: \(siret)\n"
         }
         if let contactNom = client.contactNom {
-            text += "👤 Contact: \(contactNom)"
+            text += "Contact: \(contactNom)"
             if let contactEmail = client.contactEmail {
                 text += " (\(contactEmail))"
             }

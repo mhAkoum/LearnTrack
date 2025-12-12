@@ -56,13 +56,13 @@ struct Session: Codable, Identifiable {
         return presentielDistanciel?.uppercased() == "D"
     }
     
-    var presentielEmoji: String {
+    var presentielIcon: String {
         if isPresentiel {
-            return "🏢"
+            return AppIcons.presentiel
         } else if isDistanciel {
-            return "💻"
+            return AppIcons.distanciel
         }
-        return "❓"
+        return "questionmark.circle"
     }
     
     // Computed properties for display

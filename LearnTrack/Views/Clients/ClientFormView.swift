@@ -41,57 +41,57 @@ struct ClientFormView: View {
         NavigationView {
             Form {
                 Section {
-                    FormField(emoji: "🏢", title: "Nom", placeholder: "Ex: Acme Corp", text: $nom, color: AppColors.clients)
+                    FormField(icon: AppIcons.clients, title: "Nom", placeholder: "Ex: Acme Corp", text: $nom, color: AppColors.clients)
                 } header: {
-                    Text("\(AppEmojis.clients) Informations du client")
+                    Label("Informations du client", systemImage: AppIcons.clients)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "contact@acme.com", text: $email, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
+                    FormField(icon: AppIcons.email, title: "Email", placeholder: "contact@acme.com", text: $email, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.clients)
+                    FormField(icon: AppIcons.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.clients)
                 } header: {
-                    Text("\(AppEmojis.phone) Contact")
+                    Label("Contact", systemImage: AppIcons.phone)
                 }
                 
                 Section {
-                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.clients)
-                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.clients)
-                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.clients)
+                    FormField(icon: AppIcons.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.clients)
+                    FormField(icon: AppIcons.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.clients)
+                    FormField(icon: AppIcons.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.clients)
                 } header: {
-                    Text("\(AppEmojis.location) Adresse")
+                    Label("Adresse", systemImage: AppIcons.location)
                 }
                 
                 Section {
-                    FormField(emoji: "🏢", title: "SIRET", placeholder: "Ex: 12345678901234", text: $siret, keyboardType: .numberPad, color: AppColors.clients)
+                    FormField(icon: AppIcons.building, title: "SIRET", placeholder: "Ex: 12345678901234", text: $siret, keyboardType: .numberPad, color: AppColors.clients)
                 } header: {
-                    Text("🏢 Informations entreprise")
+                    Label("Informations entreprise", systemImage: AppIcons.building)
                 }
                 
                 Section {
-                    FormField(emoji: "👤", title: "Nom du contact", placeholder: "Ex: Jean Dupont", text: $contactNom, color: AppColors.clients)
-                    FormField(emoji: AppEmojis.email, title: "Email du contact", placeholder: "jean.dupont@acme.com", text: $contactEmail, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
-                    FormField(emoji: AppEmojis.phone, title: "Téléphone du contact", placeholder: "0123456789", text: $contactTelephone, keyboardType: .phonePad, color: AppColors.clients)
+                    FormField(icon: AppIcons.person, title: "Nom du contact", placeholder: "Ex: Jean Dupont", text: $contactNom, color: AppColors.clients)
+                    FormField(icon: AppIcons.email, title: "Email du contact", placeholder: "jean.dupont@acme.com", text: $contactEmail, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
+                    FormField(icon: AppIcons.phone, title: "Téléphone du contact", placeholder: "0123456789", text: $contactTelephone, keyboardType: .phonePad, color: AppColors.clients)
                 } header: {
-                    Text("👤 Contact entreprise")
+                    Label("Contact entreprise", systemImage: AppIcons.person)
                 }
                 
                 Section {
-                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.clients)
+                    FormTextEditor(icon: AppIcons.notes, title: "Notes", text: $notes, color: AppColors.clients)
                         .frame(minHeight: 100)
                 }
             }
-            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Client" : "\(AppEmojis.add) Nouveau Client")
+            .navigationTitle(isEditMode ? "Modifier Client" : "Nouveau Client")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Annuler") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Enregistrer") {
                         saveClient()
                     }
                     .disabled(nom.isEmpty || viewModel.isLoading)
@@ -102,7 +102,7 @@ struct ClientFormView: View {
                     loadClientData(client)
                 }
             }
-            .alert("Error", isPresented: $showingError) {
+            .alert("Erreur", isPresented: $showingError) {
                 Button("OK") { }
             } message: {
                 Text(errorMessage)
@@ -128,19 +128,32 @@ struct ClientFormView: View {
     private func saveClient() {
         // Validate
         guard !nom.isEmpty else {
-            errorMessage = "Nom is required"
+            errorMessage = "Le nom est requis"
             showingError = true
             return
         }
         
         if !email.isEmpty && !email.isValidEmail {
-            errorMessage = "Please enter a valid email address"
+            errorMessage = "Veuillez entrer une adresse email valide"
             showingError = true
             return
         }
         
         if !contactEmail.isEmpty && !contactEmail.isValidEmail {
-            errorMessage = "Please enter a valid contact email address"
+            errorMessage = "Veuillez entrer une adresse email de contact valide"
+            showingError = true
+            return
+        }
+        
+        // Validate phone numbers if provided
+        if !telephone.isEmpty && !telephone.isValidPhone {
+            errorMessage = "Le numéro de téléphone doit contenir exactement 10 chiffres"
+            showingError = true
+            return
+        }
+        
+        if !contactTelephone.isEmpty && !contactTelephone.isValidPhone {
+            errorMessage = "Le numéro de téléphone du contact doit contenir exactement 10 chiffres"
             showingError = true
             return
         }

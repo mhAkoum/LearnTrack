@@ -14,28 +14,28 @@ struct MainTabView: View {
         TabView {
             SessionsListView()
                 .tabItem {
-                    Label("Sessions", systemImage: "book.fill")
+                    Label("Sessions", systemImage: "calendar")
                 }
                 .badge(0)
             
             FormateursListView()
                 .tabItem {
-                    Label("Formateurs", systemImage: "person.2.fill")
+                    Label("Formateurs", systemImage: "person.2")
                 }
             
             ClientsListView()
                 .tabItem {
-                    Label("Clients", systemImage: "person.3.fill")
+                    Label("Clients", systemImage: "building")
                 }
             
             EcolesListView()
                 .tabItem {
-                    Label("Écoles", systemImage: "building.2.fill")
+                    Label("Écoles", systemImage: "graduationcap")
                 }
             
             ProfilView()
                 .tabItem {
-                    Label("Profil", systemImage: "person.circle.fill")
+                    Label("Profil", systemImage: "gearshape")
                 }
         }
         .accentColor(AppColors.primary)
