@@ -1,9 +1,3 @@
-//
-//  Client.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
-//
 
 import Foundation
 

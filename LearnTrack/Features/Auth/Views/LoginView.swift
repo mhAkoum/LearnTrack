@@ -1,9 +1,3 @@
-//
-//  LoginView.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
-//
 
 import SwiftUI
 
@@ -23,21 +17,17 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
                 Color(.systemGroupedBackground)
                     .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Logo/Header
                         LogoView(size: 120)
                             .padding(.top, 40)
                             .padding(.bottom, 20)
                         
-                        // Login Form
                         VStack(spacing: 16) {
                             if showingSignUp {
-                                // Sign Up Fields
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("First Name")
                                         .font(.headline)
@@ -67,7 +57,6 @@ struct LoginView: View {
                                 }
                             }
                             
-                            // Email Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Email")
                                     .font(.headline)
@@ -86,7 +75,6 @@ struct LoginView: View {
                                     }
                             }
                             
-                            // Password Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Password")
                                     .font(.headline)
@@ -106,7 +94,6 @@ struct LoginView: View {
                                     }
                             }
                             
-                            // Error Message
                             if let errorMessage = viewModel.errorMessage {
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle.fill")
@@ -119,7 +106,6 @@ struct LoginView: View {
                                 .padding(.horizontal, 4)
                             }
                             
-                            // Action Button
                             Button(action: showingSignUp ? handleSignUp : handleLogin) {
                                 HStack {
                                     if viewModel.isLoading {
@@ -138,7 +124,6 @@ struct LoginView: View {
                             }
                             .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty || (showingSignUp && (signUpNom.isEmpty || signUpPrenom.isEmpty)))
                             
-                            // Toggle Sign Up/Login
                             Button(action: {
                                 showingSignUp.toggle()
                                 viewModel.clearError()

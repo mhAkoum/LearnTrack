@@ -1,9 +1,3 @@
-//
-//  LogoView.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
-//
 
 import SwiftUI
 
@@ -13,34 +7,37 @@ struct LogoView: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Logo Icon - Using SF Symbols to represent the educational icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [AppColors.primary, AppColors.primaryLight],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color(red: 0.1, green: 0.2, blue: 0.4))
                     .frame(width: size, height: size)
-                    .shadow(color: AppColors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
                 
-                // Educational icon representation
-                VStack(spacing: 4) {
-                    Image(systemName: "person.fill")
-                        .font(.system(size: size * 0.3))
-                        .foregroundColor(.white)
-                    
-                    Image(systemName: "bubble.left.fill")
-                        .font(.system(size: size * 0.25))
-                        .foregroundColor(.white)
+                Image(systemName: "person.fill")
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
+                    .offset(x: -size * 0.2, y: size * 0.05)
+                
+                ZStack {
+                    RoundedRectangle(cornerRadius: size * 0.1)
+                        .fill(Color(red: 0.95, green: 0.95, blue: 0.95))
+                        .frame(width: size * 0.55, height: size * 0.45)
                         .offset(x: size * 0.15, y: -size * 0.1)
                     
+                    Path { path in
+                        let tailSize = size * 0.12
+                        path.move(to: CGPoint(x: 0, y: 0))
+                        path.addLine(to: CGPoint(x: tailSize * 0.8, y: tailSize * 0.6))
+                        path.addLine(to: CGPoint(x: tailSize * 0.3, y: tailSize))
+                        path.closeSubpath()
+                    }
+                    .fill(Color(red: 0.95, green: 0.95, blue: 0.95))
+                    .offset(x: -size * 0.1, y: -size * 0.15)
+                    
                     Image(systemName: "graduationcap.fill")
-                        .font(.system(size: size * 0.2))
-                        .foregroundColor(.white)
-                        .offset(x: size * 0.2, y: -size * 0.15)
+                        .font(.system(size: size * 0.28))
+                        .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.4))
+                        .offset(x: size * 0.2, y: -size * 0.1)
                 }
             }
             

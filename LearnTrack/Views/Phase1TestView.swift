@@ -1,10 +1,4 @@
-//
-//  Phase1TestView.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
 //  Test view to verify Phase 1 setup
-//
 
 import SwiftUI
 

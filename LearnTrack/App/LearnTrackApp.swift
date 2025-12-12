@@ -1,9 +1,3 @@
-//
-//  LearnTrackApp.swift
-//  LearnTrack
-//
-//  Created by mohmmad akoum on 04/12/2025.
-//
 
 import SwiftUI
 

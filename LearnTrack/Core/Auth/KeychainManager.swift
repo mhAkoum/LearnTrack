@@ -1,9 +1,3 @@
-//
-//  KeychainManager.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
-//
 
 import Foundation
 import Security
@@ -24,10 +18,7 @@ class KeychainManager {
             kSecValueData as String: data
         ]
         
-        // Delete existing item if any
         _ = SecItemDelete(query as CFDictionary)
-        
-        // Add new item
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
     }

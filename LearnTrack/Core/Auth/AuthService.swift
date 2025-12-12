@@ -1,9 +1,3 @@
-//
-//  AuthService.swift
-//  LearnTrack
-//
-//  Created on 04/12/2025.
-//
 
 import Foundation
 
@@ -21,7 +15,6 @@ class AuthService {
         let response = try await apiService.register(email: email, password: password, nom: nom, prenom: prenom)
         
         if response.success, let user = response.user {
-            // Save user info to keychain if needed
             return user
         }
         
@@ -33,8 +26,6 @@ class AuthService {
         let response = try await apiService.login(email: email, password: password)
         
         if response.success, let user = response.user {
-            // Save user info to keychain if needed
-            // Store user ID as token
             _ = keychain.saveToken("\(user.id)", forKey: "user_id")
             return user
         }
@@ -49,13 +40,11 @@ class AuthService {
     
     /// Get current authenticated user
     func getCurrentUser() async throws -> User? {
-        // Check if we have a stored user ID
         guard let userIdString = keychain.getToken(forKey: "user_id"),
               let userId = Int(userIdString) else {
             return nil
         }
         
-        // Try to fetch user from API
         do {
             let users = try await apiService.getUsers()
             return users.first { $0.id == userId }
