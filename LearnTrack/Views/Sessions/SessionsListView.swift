@@ -16,13 +16,11 @@ struct SessionsListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Search Bar
-                SearchBar(text: $viewModel.searchText)
+                SearchBar(text: $viewModel.searchText, placeholder: "Rechercher des sessions...")
                     .padding(.horizontal)
                 
-                // Filter Chips (if needed)
-                if viewModel.selectedFilter != nil {
-                    FilterChipView(viewModel: viewModel)
-                }
+                // Filter View
+                SessionFilterView(viewModel: viewModel)
                 
                 // Sessions List
                 if viewModel.isLoading && viewModel.sessions.isEmpty {
@@ -43,13 +41,15 @@ struct SessionsListView: View {
                     }
                 }
             }
-            .navigationTitle("Sessions")
+            .navigationTitle("\(AppEmojis.sessions) Sessions")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingAddSession = true
                     }) {
-                        Image(systemName: "plus")
+                        Label("Ajouter", systemImage: "plus.circle.fill")
+                            .foregroundColor(AppColors.sessions)
+                            .font(.title3)
                     }
                 }
             }
@@ -89,137 +89,116 @@ struct SessionRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Status Indicator
-            Circle()
-                .fill(statusColor(for: session.statut))
-                .frame(width: 12, height: 12)
+            // Emoji/Icon Badge avec présentiel/distanciel
+            ZStack {
+                Circle()
+                    .fill(statusColor(for: session.statut).opacity(0.2))
+                    .frame(width: 50, height: 50)
+                
+                VStack(spacing: 2) {
+                    Text(statusEmoji(for: session.statut))
+                        .font(.title3)
+                    Text(session.presentielEmoji)
+                        .font(.caption)
+                }
+            }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(session.titre)
                     .font(.headline)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
                 
-                HStack {
-                    Image(systemName: "calendar")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(session.formattedDateDebut)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                HStack(spacing: 8) {
+                    Label {
+                        Text(session.formattedDateDebut)
+                            .font(.caption)
+                    } icon: {
+                        Image(systemName: "calendar")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(.secondary)
                     
                     if let prix = session.prix {
                         Spacer()
-                        Text(String(format: "%.2f €", prix))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        HStack(spacing: 4) {
+                            Text(AppEmojis.money)
+                                .font(.caption2)
+                            Text(String(format: "%.0f €", prix))
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(AppColors.success)
                     }
+                }
+                
+                // Status Badge
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(statusColor(for: session.statut))
+                        .frame(width: 6, height: 6)
+                    Text(session.statut.capitalized)
+                        .font(.caption2)
+                        .foregroundColor(statusColor(for: session.statut))
                 }
             }
             
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
     
     private func statusColor(for statut: String) -> Color {
         switch statut.lowercased() {
         case "planifié", "planifie":
-            return .blue
+            return AppColors.sessions
         case "en cours", "encours":
-            return .green
+            return AppColors.success
         case "terminé", "termine":
-            return .gray
+            return AppColors.info
         case "annulé", "annule":
-            return .red
+            return AppColors.error
         default:
-            return .orange
+            return AppColors.warning
+        }
+    }
+    
+    private func statusEmoji(for statut: String) -> String {
+        switch statut.lowercased() {
+        case "planifié", "planifie":
+            return "📋"
+        case "en cours", "encours":
+            return "🔄"
+        case "terminé", "termine":
+            return "✅"
+        case "annulé", "annule":
+            return "❌"
+        default:
+            return "📅"
         }
     }
 }
 
-// MARK: - Search Bar
-struct SearchBar: View {
-    @Binding var text: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-            
-            TextField("Search sessions...", text: $text)
-                .textFieldStyle(PlainTextFieldStyle())
-            
-            if !text.isEmpty {
-                Button(action: { text = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(8)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
-    }
-}
 
-// MARK: - Filter Chip View
-struct FilterChipView: View {
-    @ObservedObject var viewModel: SessionsViewModel
-    
-    var body: some View {
-        HStack {
-            if let filter = viewModel.selectedFilter {
-                HStack {
-                    Text(filterDescription(filter))
-                        .font(.caption)
-                    Button(action: {
-                        viewModel.selectedFilter = nil
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.caption)
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.accentColor.opacity(0.2))
-                .foregroundColor(.accentColor)
-                .cornerRadius(16)
-            }
-            
-            Spacer()
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-    }
-    
-    private func filterDescription(_ filter: SessionsViewModel.FilterType) -> String {
-        switch filter {
-        case .date(let date):
-            return "Date: \(date.displayFormat())"
-        case .formateur:
-            return "Formateur"
-        case .client:
-            return "Client"
-        }
-    }
-}
 
 // MARK: - Empty State View
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "calendar.badge.exclamationmark")
-                .font(.system(size: 50))
-                .foregroundColor(.secondary)
+        VStack(spacing: 20) {
+            Text("📅")
+                .font(.system(size: 80))
             
-            Text("No Sessions")
+            Text("Aucune session")
                 .font(.title2)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
+                .foregroundColor(AppColors.sessions)
             
-            Text("Tap the + button to create your first session")
+            Text("Appuyez sur \(AppEmojis.add) pour créer votre première session")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

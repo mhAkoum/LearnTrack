@@ -40,48 +40,48 @@ struct ClientFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Informations du client") {
-                    TextField("Nom", text: $nom)
+                Section {
+                    FormField(emoji: "🏢", title: "Nom", placeholder: "Ex: Acme Corp", text: $nom, color: AppColors.clients)
+                } header: {
+                    Text("\(AppEmojis.clients) Informations du client")
                 }
                 
-                Section("Contact") {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .autocorrectionDisabled()
+                Section {
+                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "contact@acme.com", text: $email, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.clients)
+                } header: {
+                    Text("\(AppEmojis.phone) Contact")
                 }
                 
-                Section("Adresse") {
-                    TextField("Adresse", text: $adresse)
-                    TextField("Ville", text: $ville)
-                    TextField("Code Postal", text: $codePostal)
-                        .keyboardType(.numberPad)
+                Section {
+                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.clients)
+                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.clients)
+                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.clients)
+                } header: {
+                    Text("\(AppEmojis.location) Adresse")
                 }
                 
-                Section("Informations entreprise") {
-                    TextField("SIRET", text: $siret)
-                        .keyboardType(.numberPad)
+                Section {
+                    FormField(emoji: "🏢", title: "SIRET", placeholder: "Ex: 12345678901234", text: $siret, keyboardType: .numberPad, color: AppColors.clients)
+                } header: {
+                    Text("🏢 Informations entreprise")
                 }
                 
-                Section("Contact entreprise") {
-                    TextField("Nom du contact", text: $contactNom)
-                    TextField("Email du contact", text: $contactEmail)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .autocorrectionDisabled()
-                    TextField("Téléphone du contact", text: $contactTelephone)
-                        .keyboardType(.phonePad)
+                Section {
+                    FormField(emoji: "👤", title: "Nom du contact", placeholder: "Ex: Jean Dupont", text: $contactNom, color: AppColors.clients)
+                    FormField(emoji: AppEmojis.email, title: "Email du contact", placeholder: "jean.dupont@acme.com", text: $contactEmail, keyboardType: .emailAddress, color: AppColors.clients, noAutocapitalization: true, disableAutocorrection: true)
+                    FormField(emoji: AppEmojis.phone, title: "Téléphone du contact", placeholder: "0123456789", text: $contactTelephone, keyboardType: .phonePad, color: AppColors.clients)
+                } header: {
+                    Text("👤 Contact entreprise")
                 }
                 
-                Section("Notes") {
-                    TextEditor(text: $notes)
+                Section {
+                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.clients)
                         .frame(minHeight: 100)
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Client" : "New Client")
+            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Client" : "\(AppEmojis.add) Nouveau Client")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

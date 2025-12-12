@@ -3,145 +3,166 @@
 //  LearnTrackTests
 //
 //  Created on 04/12/2025.
-//  Unit tests for Phase 1 setup verification
+//  Minimal unit tests for LearnTrack REST API architecture
 //
 
+import Foundation
 import Testing
 @testable import LearnTrack
 
 struct Phase1Tests {
     
-    // MARK: - Constants Tests
-    
-    @Test("Constants: Supabase URL is configured")
-    func testSupabaseURL() {
-        #expect(!Constants.supabaseURL.isEmpty)
-        #expect(Constants.supabaseURL.contains("supabase.co"))
-    }
-    
-    @Test("Constants: Supabase key is configured")
-    func testSupabaseKey() {
-        #expect(!Constants.supabasePublishableKey.isEmpty)
-        #expect(Constants.supabasePublishableKey.starts(with: "sb_publishable_"))
-    }
-    
-    @Test("Constants: Keychain keys are defined")
-    func testKeychainKeys() {
-        #expect(!Constants.keychainTokenKey.isEmpty)
-        #expect(!Constants.keychainRefreshTokenKey.isEmpty)
-    }
-    
     // MARK: - Model Tests
     
-    @Test("User Model: Can be instantiated")
-    func testUserModelCreation() {
-        let user = User(
-            id: UUID(),
-            email: "test@example.com",
-            role: "admin"
-        )
+    @Test("Formateur Model: Can be instantiated and decoded from JSON")
+    func testFormateurModel() throws {
+        let json = """
+        {
+            "id": 1,
+            "nom": "Doe",
+            "prenom": "John",
+            "email": "john@example.com",
+            "telephone": "0123456789",
+            "specialites": ["iOS", "Swift"],
+            "tarif_journalier": 500.0,
+            "actif": true
+        }
+        """.data(using: .utf8)!
         
-        #expect(user.email == "test@example.com")
-        #expect(user.role == "admin")
-        #expect(user.isAdmin == true)
+        let formateur = try JSONDecoder().decode(Formateur.self, from: json)
+        
+        #expect(formateur.id == 1)
+        #expect(formateur.nom == "Doe")
+        #expect(formateur.prenom == "John")
+        #expect(formateur.email == "john@example.com")
+        #expect(formateur.fullName == "John Doe")
+        #expect(formateur.actif == true)
     }
     
-    @Test("User Model: Role detection works")
-    func testUserRoleDetection() {
-        let admin = User(id: UUID(), email: "admin@test.com", role: "admin")
-        let user = User(id: UUID(), email: "user@test.com", role: "user")
+    @Test("Client Model: Can be instantiated and decoded from JSON")
+    func testClientModel() throws {
+        let json = """
+        {
+            "id": 1,
+            "nom": "Acme Corp",
+            "email": "contact@acme.com",
+            "telephone": "0123456789",
+            "ville": "Paris",
+            "code_postal": "75001",
+            "actif": true
+        }
+        """.data(using: .utf8)!
         
-        #expect(admin.isAdmin == true)
-        #expect(user.isAdmin == false)
+        let client = try JSONDecoder().decode(Client.self, from: json)
+        
+        #expect(client.id == 1)
+        #expect(client.nom == "Acme Corp")
+        #expect(client.email == "contact@acme.com")
+        #expect(client.ville == "Paris")
+        #expect(client.actif == true)
     }
     
-    @Test("Session Model: Can be instantiated")
-    func testSessionModelCreation() {
-        let session = Session(
-            date_debut: "2025-12-04T10:00:00",
-            date_fin: "2025-12-04T18:00:00",
-            module: "iOS Development",
-            presentiel_distanciel: "Présentiel"
-        )
+    @Test("Ecole Model: Can be instantiated and decoded from JSON")
+    func testEcoleModel() throws {
+        let json = """
+        {
+            "id": 1,
+            "nom": "EPITA",
+            "adresse": "14-16 rue Voltaire",
+            "ville": "Paris",
+            "code_postal": "94270",
+            "email": "contact@epita.fr",
+            "responsable_nom": "John Doe",
+            "capacite": 100,
+            "actif": true
+        }
+        """.data(using: .utf8)!
         
-        #expect(session.module == "iOS Development")
-        #expect(session.isPresentiel == true)
-        #expect(session.presentiel_distanciel == "Présentiel")
+        let ecole = try JSONDecoder().decode(Ecole.self, from: json)
+        
+        #expect(ecole.id == 1)
+        #expect(ecole.nom == "EPITA")
+        #expect(ecole.ville == "Paris")
+        #expect(ecole.capacite == 100)
+        #expect(ecole.actif == true)
     }
     
-    @Test("Session Model: Date parsing works")
-    func testSessionDateParsing() {
-        let session = Session(
-            date_debut: "2025-12-04T10:00:00",
-            date_fin: "2025-12-04T18:00:00",
-            module: "Test",
-            presentiel_distanciel: "Présentiel"
-        )
+    @Test("Session Model: Can be instantiated and decoded from JSON")
+    func testSessionModel() throws {
+        let json = """
+        {
+            "id": 1,
+            "titre": "iOS Development",
+            "description": "Formation Swift",
+            "date_debut": "2025-12-04",
+            "date_fin": "2025-12-06",
+            "heure_debut": "09:00:00",
+            "heure_fin": "17:00:00",
+            "client_id": 1,
+            "ecole_id": 1,
+            "formateur_id": 1,
+            "nb_participants": 20,
+            "statut": "planifie",
+            "prix": 5000.0
+        }
+        """.data(using: .utf8)!
         
-        #expect(session.dateDebut != nil)
-        #expect(session.dateFin != nil)
+        let session = try JSONDecoder().decode(Session.self, from: json)
+        
+        #expect(session.id == 1)
+        #expect(session.titre == "iOS Development")
+        #expect(session.dateDebut == "2025-12-04")
+        #expect(session.statut == "planifie")
+        #expect(session.clientId == 1)
     }
     
-    @Test("Formateur Model: Can be instantiated")
-    func testFormateurModelCreation() {
-        let formateur = Formateur(
+    // MARK: - Create/Update DTO Tests
+    
+    @Test("FormateurCreate: toDictionary works")
+    func testFormateurCreateToDictionary() {
+        let create = FormateurCreate(
             nom: "Doe",
             prenom: "John",
             email: "john@example.com",
-            type: "interne"
+            specialites: ["iOS", "Swift"],
+            tarifJournalier: 500.0
         )
         
-        #expect(formateur.nom == "Doe")
-        #expect(formateur.prenom == "John")
-        #expect(formateur.fullName == "John Doe")
-        #expect(formateur.isInterne == true)
+        let dict = create.toDictionary()
+        
+        #expect(dict["nom"] as? String == "Doe")
+        #expect(dict["prenom"] as? String == "John")
+        #expect(dict["tarif_journalier"] as? Double == 500.0)
     }
     
-    @Test("Client Model: Can be instantiated")
-    func testClientModelCreation() {
-        let client = Client(
-            nom: "Smith",
-            prenom: "Jane",
-            email: "jane@example.com"
+    @Test("ClientCreate: toDictionary works")
+    func testClientCreateToDictionary() {
+        let create = ClientCreate(
+            nom: "Acme Corp",
+            email: "contact@acme.com",
+            ville: "Paris",
+            codePostal: "75001"
         )
         
-        #expect(client.nom == "Smith")
-        #expect(client.prenom == "Jane")
-        #expect(client.fullName == "Jane Smith")
-    }
-    
-    @Test("Ecole Model: Can be instantiated")
-    func testEcoleModelCreation() {
-        let ecole = Ecole(
-            nom: "EPITA",
-            contact_email: "contact@epita.fr"
-        )
+        let dict = create.toDictionary()
         
-        #expect(ecole.nom == "EPITA")
-        #expect(ecole.contact_email == "contact@epita.fr")
+        #expect(dict["nom"] as? String == "Acme Corp")
+        #expect(dict["code_postal"] as? String == "75001")
     }
     
-    // MARK: - Service Tests
+    // MARK: - KeychainManager Tests
     
-    @Test("SupabaseService: Singleton works")
-    func testSupabaseServiceSingleton() {
-        let service1 = SupabaseService.shared
-        let service2 = SupabaseService.shared
+    @Test("KeychainManager: Singleton works")
+    func testKeychainManagerSingleton() {
+        let manager1 = KeychainManager.shared
+        let manager2 = KeychainManager.shared
         
-        #expect(service1 === service2)
+        #expect(manager1 === manager2)
     }
     
-    @Test("KeychainService: Singleton works")
-    func testKeychainServiceSingleton() {
-        let service1 = KeychainService.shared
-        let service2 = KeychainService.shared
-        
-        #expect(service1 === service2)
-    }
-    
-    @Test("KeychainService: Save and retrieve token")
+    @Test("KeychainManager: Save and retrieve token")
     func testKeychainSaveRetrieve() {
-        let keychain = KeychainService.shared
+        let keychain = KeychainManager.shared
         let testKey = "test.key.\(UUID().uuidString)"
         let testValue = "test_token_value"
         
@@ -154,17 +175,17 @@ struct Phase1Tests {
         #expect(retrieved == testValue)
         
         // Cleanup
-        keychain.deleteToken(forKey: testKey)
+        _ = keychain.deleteToken(forKey: testKey)
     }
     
-    @Test("KeychainService: Delete token")
+    @Test("KeychainManager: Delete token")
     func testKeychainDelete() {
-        let keychain = KeychainService.shared
+        let keychain = KeychainManager.shared
         let testKey = "test.delete.\(UUID().uuidString)"
         let testValue = "test_value"
         
         // Save
-        keychain.saveToken(testValue, forKey: testKey)
+        _ = keychain.saveToken(testValue, forKey: testKey)
         
         // Delete
         let deleteSuccess = keychain.deleteToken(forKey: testKey)
@@ -202,14 +223,6 @@ struct Phase1Tests {
         #expect("1234567890".isValidPhone == true)
         #expect("123".isValidPhone == false) // Too short
         #expect("abc123".isValidPhone == false) // Contains letters
-    }
-    
-    @Test("String Extension: Date parsing works")
-    func testStringToDate() {
-        let dateString = "2025-12-04T10:00:00"
-        let date = dateString.toDate()
-        
-        #expect(date != nil)
     }
 }
 

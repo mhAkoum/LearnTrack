@@ -16,7 +16,7 @@ struct EcolesListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Search Bar
-                SearchBar(text: $viewModel.searchText)
+                SearchBar(text: $viewModel.searchText, placeholder: "Rechercher des écoles...")
                     .padding(.horizontal)
                 
                 // Ecoles List
@@ -38,13 +38,15 @@ struct EcolesListView: View {
                     }
                 }
             }
-            .navigationTitle("Écoles")
+            .navigationTitle("\(AppEmojis.ecoles) Écoles")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingAddEcole = true
                     }) {
-                        Image(systemName: "plus")
+                        Label("Ajouter", systemImage: "plus.circle.fill")
+                            .foregroundColor(AppColors.ecoles)
+                            .font(.title3)
                     }
                 }
             }
@@ -83,54 +85,101 @@ struct EcoleRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Icon
-            Circle()
-                .fill(Color.purple.opacity(0.2))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Image(systemName: "building.2.fill")
-                        .foregroundColor(.purple)
-                )
+            // Icon Badge
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: ecole.actif ? 
+                                [AppColors.ecoles.opacity(0.3), AppColors.ecoles.opacity(0.1)] :
+                                [Color.gray.opacity(0.3), Color.gray.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 50, height: 50)
+                
+                Text(ecole.actif ? "🏫" : "🏚️")
+                    .font(.title2)
+            }
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(ecole.nom)
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(ecole.nom)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    if ecole.actif {
+                        Text(AppEmojis.star)
+                            .font(.caption)
+                    }
+                }
                 
                 if let responsableNom = ecole.responsableNom {
-                    Text(responsableNom)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Text("👤")
+                            .font(.caption2)
+                        Text(responsableNom)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.secondary)
                 }
                 
                 if let email = ecole.email {
-                    Text(email)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Text(AppEmojis.email)
+                            .font(.caption2)
+                        Text(email)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.secondary)
+                }
+                
+                if let capacite = ecole.capacite {
+                    HStack(spacing: 4) {
+                        Text("👥")
+                            .font(.caption2)
+                        Text("Capacité: \(capacite)")
+                            .font(.caption)
+                    }
+                    .foregroundColor(AppColors.ecoles)
                 }
             }
             
             Spacer()
+            
+            if !ecole.actif {
+                Text("Inactif")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AppColors.error.opacity(0.2))
+                    .foregroundColor(AppColors.error)
+                    .cornerRadius(8)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
 }
 
 // MARK: - Empty Ecoles View
 struct EmptyEcolesView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "building.2")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
+        VStack(spacing: 20) {
+            Text("🏫")
+                .font(.system(size: 80))
             
-            Text("No Écoles")
+            Text("Aucune école")
                 .font(.title2)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
+                .foregroundColor(AppColors.ecoles)
             
-            Text("Tap the + button to add a new école")
+            Text("Appuyez sur \(AppEmojis.add) pour ajouter une nouvelle école")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

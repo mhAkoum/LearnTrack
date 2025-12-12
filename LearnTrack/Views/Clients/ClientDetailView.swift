@@ -12,6 +12,7 @@ struct ClientDetailView: View {
     @ObservedObject var viewModel: ClientsViewModel
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
+    @State private var showingCopyConfirmation = false
     
     var body: some View {
         ScrollView {
@@ -164,18 +165,32 @@ struct ClientDetailView: View {
                     Button(action: {
                         showingEdit = true
                     }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label("Modifier", systemImage: "pencil")
+                    }
+                    
+                    Button(action: {
+                        // Copier dans le presse-papier (SHARE-05)
+                        let text = clientShareText()
+                        ClipboardManager.shared.copyToClipboard(text)
+                        showingCopyConfirmation = true
+                    }) {
+                        Label("Copier", systemImage: "doc.on.doc")
                     }
                     
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
-                        Label("Delete", systemImage: "trash")
+                        Label("Supprimer", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
             }
+        }
+        .alert("Copié !", isPresented: $showingCopyConfirmation) {
+            Button("OK") { }
+        } message: {
+            Text("Les informations du client ont été copiées dans le presse-papier")
         }
         .sheet(isPresented: $showingEdit) {
             ClientFormView(viewModel: viewModel, client: client)
@@ -198,6 +213,37 @@ struct ClientDetailView: View {
            let url = URL(string: "http://maps.apple.com/?q=\(encodedAddress)") {
             UIApplication.shared.open(url)
         }
+    }
+    
+    private func clientShareText() -> String {
+        var text = "\(AppEmojis.clients) \(client.nom)\n\n"
+        if let email = client.email {
+            text += "\(AppEmojis.email) Email: \(email)\n"
+        }
+        if let telephone = client.telephone {
+            text += "\(AppEmojis.phone) Téléphone: \(telephone)\n"
+        }
+        if let adresse = client.adresse {
+            text += "\(AppEmojis.location) Adresse: \(adresse)"
+            if let ville = client.ville {
+                text += ", \(ville)"
+            }
+            if let codePostal = client.codePostal {
+                text += " \(codePostal)"
+            }
+            text += "\n"
+        }
+        if let siret = client.siret {
+            text += "🏢 SIRET: \(siret)\n"
+        }
+        if let contactNom = client.contactNom {
+            text += "👤 Contact: \(contactNom)"
+            if let contactEmail = client.contactEmail {
+                text += " (\(contactEmail))"
+            }
+            text += "\n"
+        }
+        return text
     }
 }
 

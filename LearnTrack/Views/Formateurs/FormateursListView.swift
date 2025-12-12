@@ -16,8 +16,31 @@ struct FormateursListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Search Bar
-                SearchBar(text: $viewModel.searchText)
+                SearchBar(text: $viewModel.searchText, placeholder: "Rechercher des formateurs...")
                     .padding(.horizontal)
+                
+                // Filter View
+                FilterView(
+                    selectedFilter: Binding(
+                        get: {
+                            if let filter = viewModel.selectedFilter {
+                                return FilterOption(id: filter.rawValue, title: filter.title, emoji: filter.emoji)
+                            }
+                            return nil
+                        },
+                        set: { newValue in
+                            if let newValue = newValue, let filterType = FormateursViewModel.FilterType(rawValue: newValue.id) {
+                                viewModel.selectedFilter = filterType
+                            } else {
+                                viewModel.selectedFilter = nil
+                            }
+                        }
+                    ),
+                    filters: FormateursViewModel.FilterType.allCases.filter { $0 != .tous }.map {
+                        FilterOption(id: $0.rawValue, title: $0.title, emoji: $0.emoji)
+                    },
+                    color: AppColors.formateurs
+                )
                 
                 // Formateurs List
                 if viewModel.isLoading && viewModel.formateurs.isEmpty {
@@ -38,13 +61,15 @@ struct FormateursListView: View {
                     }
                 }
             }
-            .navigationTitle("Formateurs")
+            .navigationTitle("\(AppEmojis.formateurs) Formateurs")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingAddFormateur = true
                     }) {
-                        Image(systemName: "plus")
+                        Label("Ajouter", systemImage: "plus.circle.fill")
+                            .foregroundColor(AppColors.formateurs)
+                            .font(.title3)
                     }
                 }
             }
@@ -85,30 +110,76 @@ struct FormateurRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Status Badge
-            Circle()
-                .fill(formateur.actif ? Color.green : Color.gray)
-                .frame(width: 12, height: 12)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(formateur.fullName)
-                    .font(.headline)
+            // Avatar/Icon Badge
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: formateur.actif ? 
+                                [AppColors.formateurs.opacity(0.3), AppColors.formateurs.opacity(0.1)] :
+                                [Color.gray.opacity(0.3), Color.gray.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 50, height: 50)
                 
-                Text(formateur.email)
-                    .font(.caption)
+                Text(formateur.actif ? "👨‍🏫" : "😴")
+                    .font(.title2)
+            }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(formateur.fullName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    if formateur.actif {
+                        Text(AppEmojis.star)
+                            .font(.caption)
+                    }
+                }
+                
+                HStack(spacing: 8) {
+                    Label {
+                        Text(formateur.email)
+                            .font(.caption)
+                    } icon: {
+                        Text(AppEmojis.email)
+                            .font(.caption2)
+                    }
                     .foregroundColor(.secondary)
+                }
                 
                 if let telephone = formateur.telephone {
-                    Text(telephone)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Text(AppEmojis.phone)
+                            .font(.caption2)
+                        Text(telephone)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.secondary)
                 }
                 
                 if let specialites = formateur.specialites, !specialites.isEmpty {
-                    Text(specialites.joined(separator: ", "))
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 4) {
+                            ForEach(specialites.prefix(3), id: \.self) { specialite in
+                                Text(specialite)
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(AppColors.formateurs.opacity(0.2))
+                                    .foregroundColor(AppColors.formateurs)
+                                    .cornerRadius(6)
+                            }
+                            if specialites.count > 3 {
+                                Text("+\(specialites.count - 3)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                 }
             }
             
@@ -119,31 +190,33 @@ struct FormateurRowView: View {
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.red.opacity(0.2))
-                    .foregroundColor(.red)
+                    .background(AppColors.error.opacity(0.2))
+                    .foregroundColor(AppColors.error)
                     .cornerRadius(8)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
 }
 
 // MARK: - Empty Formateurs View
 struct EmptyFormateursView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.2.badge.plus")
-                .font(.system(size: 50))
-                .foregroundColor(.secondary)
+        VStack(spacing: 20) {
+            Text("👨‍🏫")
+                .font(.system(size: 80))
             
-            Text("No Formateurs")
+            Text("Aucun formateur")
                 .font(.title2)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
+                .foregroundColor(AppColors.formateurs)
             
-            Text("Tap the + button to add your first formateur")
+            Text("Appuyez sur \(AppEmojis.add) pour ajouter votre premier formateur")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

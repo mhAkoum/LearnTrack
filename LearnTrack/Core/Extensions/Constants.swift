@@ -14,6 +14,11 @@ enum Constants {
     static let displayDateFormat = "dd/MM/yyyy"
     static let displayDateTimeFormat = "dd/MM/yyyy HH:mm"
     
+    // MARK: - Supabase Configuration
+    static let supabaseURL = "https://epsksludoqhtpxjwrdmk.supabase.co"
+    static let supabasePublishableKey = "sb_publishable_EGI8p..."
+    static let supabaseSecretKey = "sb_secret_YOUR_SECRET_KEY_HERE" // Clé secrète Supabase
+    
     // MARK: - User Roles
     enum UserRole: String {
         case admin = "admin"

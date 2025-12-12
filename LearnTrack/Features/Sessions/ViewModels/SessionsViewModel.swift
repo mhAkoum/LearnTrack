@@ -16,6 +16,8 @@ class SessionsViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var searchText = ""
     @Published var selectedFilter: FilterType?
+    @Published var selectedStatusFilter: String? = nil
+    @Published var selectedModeFilter: String? = nil // "Présentiel" ou "Distanciel"
     
     private let apiService = APIService.shared
     
@@ -32,7 +34,28 @@ class SessionsViewModel: ObservableObject {
         if !searchText.isEmpty {
             result = result.filter { session in
                 session.titre.localizedCaseInsensitiveContains(searchText) ||
-                (session.description?.localizedCaseInsensitiveContains(searchText) ?? false)
+                (session.description?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                session.statut.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        // Apply status filter
+        if let statusFilter = selectedStatusFilter {
+            result = result.filter { session in
+                session.statut.lowercased() == statusFilter.lowercased() ||
+                session.statut.lowercased().contains(statusFilter.lowercased())
+            }
+        }
+        
+        // Apply mode filter (présentiel/distanciel)
+        if let modeFilter = selectedModeFilter {
+            result = result.filter { session in
+                if modeFilter.lowercased() == "présentiel" || modeFilter.lowercased() == "presentiel" {
+                    return session.isPresentiel
+                } else if modeFilter.lowercased() == "distanciel" {
+                    return session.isDistanciel
+                }
+                return true
             }
         }
         

@@ -17,9 +17,10 @@ struct SessionFormView: View {
     @State private var description: String = ""
     @State private var dateDebut: Date = Date()
     @State private var dateFin: Date = Date().addingTimeInterval(3600 * 8) // 8 hours later
-    @State private var heureDebut: String = ""
-    @State private var heureFin: String = ""
+    @State private var heureDebut: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
+    @State private var heureFin: Date = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var statut: String = "planifié"
+    @State private var presentielDistanciel: String = "Présentiel"
     @State private var prix: String = ""
     @State private var nbParticipants: String = ""
     @State private var notes: String = ""
@@ -39,43 +40,200 @@ struct SessionFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Titre") {
-                    TextField("Titre de la session", text: $titre)
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Titre de la session")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text("📋")
+                                .font(.title3)
+                        }
+                        TextField("Ex: Formation iOS", text: $titre)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("\(AppEmojis.sessions) Informations principales")
                 }
                 
-                Section("Description") {
-                    TextEditor(text: $description)
-                        .frame(minHeight: 80)
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Description")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.notes)
+                                .font(.title3)
+                        }
+                        TextEditor(text: $description)
+                            .frame(minHeight: 100)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray4), lineWidth: 1)
+                            )
+                    }
+                    .padding(.vertical, 4)
                 }
                 
-                Section("Dates") {
-                    DatePicker("Date de début", selection: $dateDebut, displayedComponents: [.date])
-                    DatePicker("Date de fin", selection: $dateFin, displayedComponents: [.date])
-                }
-                
-                Section("Heures") {
-                    TextField("Heure de début (HH:MM:SS)", text: $heureDebut)
-                        .keyboardType(.numbersAndPunctuation)
-                    TextField("Heure de fin (HH:MM:SS)", text: $heureFin)
-                        .keyboardType(.numbersAndPunctuation)
-                }
-                
-                Section("Informations") {
-                    TextField("Statut", text: $statut)
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Date de début")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.calendar)
+                                .font(.title3)
+                        }
+                        DatePicker("", selection: $dateDebut, displayedComponents: [.date])
+                            .datePickerStyle(.compact)
+                    }
+                    .padding(.vertical, 4)
                     
-                    TextField("Prix (€)", text: $prix)
-                        .keyboardType(.decimalPad)
-                    
-                    TextField("Nombre de participants", text: $nbParticipants)
-                        .keyboardType(.numberPad)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Date de fin")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.calendar)
+                                .font(.title3)
+                        }
+                        DatePicker("", selection: $dateFin, displayedComponents: [.date])
+                            .datePickerStyle(.compact)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("\(AppEmojis.calendar) Dates")
                 }
                 
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 100)
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Heure de début")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.clock)
+                                .font(.title3)
+                        }
+                        DatePicker("", selection: $heureDebut, displayedComponents: [.hourAndMinute])
+                            .datePickerStyle(.compact)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Heure de fin")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.clock)
+                                .font(.title3)
+                        }
+                        DatePicker("", selection: $heureFin, displayedComponents: [.hourAndMinute])
+                            .datePickerStyle(.compact)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("\(AppEmojis.clock) Heures")
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Mode")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text("🏢")
+                                .font(.title3)
+                        }
+                        Picker("Mode", selection: $presentielDistanciel) {
+                            Text("🏢 Présentiel").tag("Présentiel")
+                            Text("💻 Distanciel").tag("Distanciel")
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("🏢 Mode de formation")
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Statut")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text("📊")
+                                .font(.title3)
+                        }
+                        TextField("Ex: planifié", text: $statut)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Prix")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.money)
+                                .font(.title3)
+                        }
+                        TextField("Ex: 5000", text: $prix)
+                            .keyboardType(.decimalPad)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Nombre de participants")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text("👥")
+                                .font(.title3)
+                        }
+                        TextField("Ex: 20", text: $nbParticipants)
+                            .keyboardType(.numberPad)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("ℹ️ Informations complémentaires")
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Notes")
+                                .font(.headline)
+                                .foregroundColor(AppColors.sessions)
+                        } icon: {
+                            Text(AppEmojis.notes)
+                                .font(.title3)
+                        }
+                        TextEditor(text: $notes)
+                            .frame(minHeight: 100)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray4), lineWidth: 1)
+                            )
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("\(AppEmojis.notes) Notes")
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Session" : "New Session")
+            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Session" : "\(AppEmojis.add) Nouvelle Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -114,9 +272,46 @@ struct SessionFormView: View {
         if let date = session.dateFinDate {
             dateFin = date
         }
-        heureDebut = session.heureDebut ?? ""
-        heureFin = session.heureFin ?? ""
+        // Convertir les heures string en Date
+        if let heureDebutValue = session.heureDebut {
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "HH:mm:ss"
+            if let date = timeFormatter.date(from: heureDebutValue) {
+                heureDebut = date
+            } else {
+                // Essayer avec HH:mm
+                timeFormatter.dateFormat = "HH:mm"
+                if let date = timeFormatter.date(from: heureDebutValue) {
+                    heureDebut = date
+                }
+            }
+        }
+        if let heureFinValue = session.heureFin {
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "HH:mm:ss"
+            if let date = timeFormatter.date(from: heureFinValue) {
+                heureFin = date
+            } else {
+                // Essayer avec HH:mm
+                timeFormatter.dateFormat = "HH:mm"
+                if let date = timeFormatter.date(from: heureFinValue) {
+                    heureFin = date
+                }
+            }
+        }
         statut = session.statut
+        // Convertir "P" ou "D" en "Présentiel" ou "Distanciel" pour l'affichage
+        if let mode = session.presentielDistanciel {
+            if mode.uppercased() == "P" {
+                presentielDistanciel = "Présentiel"
+            } else if mode.uppercased() == "D" {
+                presentielDistanciel = "Distanciel"
+            } else {
+                presentielDistanciel = mode
+            }
+        } else {
+            presentielDistanciel = "Présentiel"
+        }
         if let prixValue = session.prix {
             prix = String(format: "%.2f", prixValue)
         }
@@ -146,6 +341,12 @@ struct SessionFormView: View {
         let dateDebutString = dateFormatter.string(from: dateDebut)
         let dateFinString = dateFormatter.string(from: dateFin)
         
+        // Format times to HH:MM
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let heureDebutString = timeFormatter.string(from: heureDebut)
+        let heureFinString = timeFormatter.string(from: heureFin)
+        
         // Parse prix and nbParticipants
         let prixValue = prix.isEmpty ? nil : Double(prix.replacingOccurrences(of: ",", with: "."))
         let nbParticipantsValue = nbParticipants.isEmpty ? nil : Int(nbParticipants)
@@ -159,15 +360,16 @@ struct SessionFormView: View {
                         description: description.isEmpty ? nil : description,
                         dateDebut: dateDebutString,
                         dateFin: dateFinString,
-                        heureDebut: heureDebut.isEmpty ? nil : heureDebut,
-                        heureFin: heureFin.isEmpty ? nil : heureFin,
+                        heureDebut: heureDebutString,
+                        heureFin: heureFinString,
                         clientId: nil, // TODO: Add client picker
                         ecoleId: nil,  // TODO: Add ecole picker
                         formateurId: nil, // TODO: Add formateur picker
                         nbParticipants: nbParticipantsValue,
                         statut: statut.isEmpty ? nil : statut,
                         prix: prixValue,
-                        notes: notes.isEmpty ? nil : notes
+                        notes: notes.isEmpty ? nil : notes,
+                        presentielDistanciel: presentielDistanciel
                     )
                     try await viewModel.updateSession(id: sessionId, sessionUpdate)
                 } else {
@@ -177,15 +379,16 @@ struct SessionFormView: View {
                         description: description.isEmpty ? nil : description,
                         dateDebut: dateDebutString,
                         dateFin: dateFinString,
-                        heureDebut: heureDebut.isEmpty ? nil : heureDebut,
-                        heureFin: heureFin.isEmpty ? nil : heureFin,
+                        heureDebut: heureDebutString,
+                        heureFin: heureFinString,
                         clientId: nil, // TODO: Add client picker
                         ecoleId: nil,  // TODO: Add ecole picker
                         formateurId: nil, // TODO: Add formateur picker
                         nbParticipants: nbParticipantsValue,
                         statut: statut.isEmpty ? nil : statut,
                         prix: prixValue,
-                        notes: notes.isEmpty ? nil : notes
+                        notes: notes.isEmpty ? nil : notes,
+                        presentielDistanciel: presentielDistanciel
                     )
                     try await viewModel.createSession(sessionCreate)
                 }

@@ -15,8 +15,34 @@ class ClientsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var searchText = ""
+    @Published var selectedFilter: FilterType?
     
     private let apiService = APIService.shared
+    
+    enum FilterType: String, CaseIterable {
+        case tous = "tous"
+        case actifs = "actifs"
+        case inactifs = "inactifs"
+        case avecContact = "avec_contact"
+        
+        var title: String {
+            switch self {
+            case .tous: return "Tous"
+            case .actifs: return "Actifs"
+            case .inactifs: return "Inactifs"
+            case .avecContact: return "Avec contact"
+            }
+        }
+        
+        var emoji: String {
+            switch self {
+            case .tous: return "🔍"
+            case .actifs: return "✅"
+            case .inactifs: return "❌"
+            case .avecContact: return "👤"
+            }
+        }
+    }
     
     var filteredClients: [Client] {
         var result = clients
@@ -26,7 +52,25 @@ class ClientsViewModel: ObservableObject {
             result = result.filter { client in
                 client.nom.localizedCaseInsensitiveContains(searchText) ||
                 (client.email?.localizedCaseInsensitiveContains(searchText) ?? false) ||
-                (client.contactNom?.localizedCaseInsensitiveContains(searchText) ?? false)
+                (client.contactNom?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (client.ville?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (client.siret?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
+        }
+        
+        // Apply selected filter
+        if let filter = selectedFilter {
+            switch filter {
+            case .tous:
+                break
+            case .actifs:
+                result = result.filter { $0.actif }
+            case .inactifs:
+                result = result.filter { !$0.actif }
+            case .avecContact:
+                result = result.filter { client in
+                    client.contactNom != nil && !client.contactNom!.isEmpty
+                }
             }
         }
         

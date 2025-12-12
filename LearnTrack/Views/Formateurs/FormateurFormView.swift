@@ -39,43 +39,48 @@ struct FormateurFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Informations personnelles") {
-                    TextField("Nom", text: $nom)
-                    TextField("Prénom", text: $prenom)
+                Section {
+                    FormField(emoji: "👤", title: "Nom", placeholder: "Ex: Dupont", text: $nom, color: AppColors.formateurs)
+                    FormField(emoji: "👤", title: "Prénom", placeholder: "Ex: Jean", text: $prenom, color: AppColors.formateurs)
+                } header: {
+                    Text("\(AppEmojis.formateurs) Informations personnelles")
                 }
                 
-                Section("Contact") {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .autocorrectionDisabled()
+                Section {
+                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "jean.dupont@example.com", text: $email, keyboardType: .emailAddress, color: AppColors.formateurs, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.formateurs)
+                } header: {
+                    Text("\(AppEmojis.phone) Contact")
                 }
                 
-                Section("Spécialités") {
-                    TextField("Spécialités (séparées par des virgules)", text: $specialites)
+                Section {
+                    FormField(emoji: "🎯", title: "Spécialités", placeholder: "iOS, Swift, UIKit (séparées par des virgules)", text: $specialites, color: AppColors.formateurs)
+                } header: {
+                    Text("🎯 Spécialités")
                 }
                 
-                Section("Tarif") {
-                    TextField("Tarif journalier (€)", text: $tarifJournalier)
-                        .keyboardType(.decimalPad)
+                Section {
+                    FormField(emoji: AppEmojis.money, title: "Tarif journalier", placeholder: "Ex: 500", text: $tarifJournalier, keyboardType: .decimalPad, color: AppColors.formateurs)
+                } header: {
+                    Text("\(AppEmojis.money) Tarif")
                 }
                 
-                Section("Adresse") {
-                    TextField("Adresse", text: $adresse)
-                    TextField("Ville", text: $ville)
-                    TextField("Code Postal", text: $codePostal)
-                        .keyboardType(.numberPad)
+                Section {
+                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 123 rue de la Paix", text: $adresse, color: AppColors.formateurs)
+                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.formateurs)
+                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 75001", text: $codePostal, keyboardType: .numberPad, color: AppColors.formateurs)
+                } header: {
+                    Text("\(AppEmojis.location) Adresse")
                 }
                 
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 100)
+                Section {
+                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.formateurs)
+                } header: {
+                    Text("\(AppEmojis.notes) Notes")
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Formateur" : "New Formateur")
+            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier Formateur" : "\(AppEmojis.add) Nouveau Formateur")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

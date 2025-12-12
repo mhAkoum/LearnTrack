@@ -14,44 +14,31 @@ struct MainTabView: View {
         TabView {
             SessionsListView()
                 .tabItem {
-                    Label("Sessions", systemImage: "calendar")
+                    Label("Sessions", systemImage: "book.fill")
                 }
+                .badge(0)
             
             FormateursListView()
                 .tabItem {
-                    Label("Formateurs", systemImage: "person.2")
+                    Label("Formateurs", systemImage: "person.2.fill")
                 }
             
             ClientsListView()
                 .tabItem {
-                    Label("Clients", systemImage: "person.crop.circle")
+                    Label("Clients", systemImage: "person.3.fill")
                 }
             
             EcolesListView()
                 .tabItem {
-                    Label("Écoles", systemImage: "building.2")
+                    Label("Écoles", systemImage: "building.2.fill")
+                }
+            
+            ProfilView()
+                .tabItem {
+                    Label("Profil", systemImage: "person.circle.fill")
                 }
         }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    if let user = authViewModel.currentUser {
-                        Text("Signed in as: \(user.fullName)")
-                            .font(.caption)
-                    }
-                    
-                    Button(role: .destructive, action: {
-                        Task {
-                            await authViewModel.logout()
-                        }
-                    }) {
-                        Label("Sign Out", systemImage: "arrow.right.square")
-                    }
-                } label: {
-                    Image(systemName: "person.circle")
-                }
-            }
-        }
+        .accentColor(AppColors.primary)
     }
 }
 

@@ -38,39 +38,42 @@ struct EcoleFormView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Informations de l'école") {
-                    TextField("Nom de l'école", text: $nom)
+                Section {
+                    FormField(emoji: AppEmojis.ecoles, title: "Nom de l'école", placeholder: "Ex: EPITA", text: $nom, color: AppColors.ecoles)
+                } header: {
+                    Text("\(AppEmojis.ecoles) Informations de l'école")
                 }
                 
-                Section("Adresse") {
-                    TextField("Adresse", text: $adresse)
-                    TextField("Ville", text: $ville)
-                    TextField("Code Postal", text: $codePostal)
-                        .keyboardType(.numberPad)
+                Section {
+                    FormField(emoji: AppEmojis.location, title: "Adresse", placeholder: "Ex: 14-16 rue Voltaire", text: $adresse, color: AppColors.ecoles)
+                    FormField(emoji: AppEmojis.location, title: "Ville", placeholder: "Ex: Paris", text: $ville, color: AppColors.ecoles)
+                    FormField(emoji: AppEmojis.location, title: "Code Postal", placeholder: "Ex: 94270", text: $codePostal, keyboardType: .numberPad, color: AppColors.ecoles)
+                } header: {
+                    Text("\(AppEmojis.location) Adresse")
                 }
                 
-                Section("Contact") {
-                    TextField("Responsable", text: $responsableNom)
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .autocorrectionDisabled()
+                Section {
+                    FormField(emoji: "👤", title: "Responsable", placeholder: "Ex: Jean Dupont", text: $responsableNom, color: AppColors.ecoles)
+                    FormField(emoji: AppEmojis.email, title: "Email", placeholder: "contact@ecole.fr", text: $email, keyboardType: .emailAddress, color: AppColors.ecoles, noAutocapitalization: true, disableAutocorrection: true)
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    FormField(emoji: AppEmojis.phone, title: "Téléphone", placeholder: "0123456789", text: $telephone, keyboardType: .phonePad, color: AppColors.ecoles)
+                } header: {
+                    Text("\(AppEmojis.phone) Contact")
                 }
                 
-                Section("Informations complémentaires") {
-                    TextField("Capacité", text: $capacite)
-                        .keyboardType(.numberPad)
+                Section {
+                    FormField(emoji: "👥", title: "Capacité", placeholder: "Ex: 100", text: $capacite, keyboardType: .numberPad, color: AppColors.ecoles)
+                } header: {
+                    Text("👥 Informations complémentaires")
                 }
                 
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 100)
+                Section {
+                    FormTextEditor(emoji: AppEmojis.notes, title: "Notes", text: $notes, color: AppColors.ecoles)
+                } header: {
+                    Text("\(AppEmojis.notes) Notes")
                 }
             }
-            .navigationTitle(isEditMode ? "Edit École" : "New École")
+            .navigationTitle(isEditMode ? "\(AppEmojis.edit) Modifier École" : "\(AppEmojis.add) Nouvelle École")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

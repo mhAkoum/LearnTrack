@@ -163,7 +163,8 @@ struct Phase1TestView: View {
             nbParticipants: 10,
             statut: "planifié",
             prix: 500.0,
-            notes: nil
+            notes: nil,
+            presentielDistanciel: "P"
         )
         
         let isValid = !session.titre.isEmpty && !session.statut.isEmpty

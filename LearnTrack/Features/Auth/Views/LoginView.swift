@@ -30,21 +30,9 @@ struct LoginView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         // Logo/Header
-                        VStack(spacing: 8) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 60))
-                                .foregroundColor(.accentColor)
-                            
-                            Text("LearnTrack")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                            
-                            Text("Training Management")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.top, 40)
-                        .padding(.bottom, 20)
+                        LogoView(size: 120)
+                            .padding(.top, 40)
+                            .padding(.bottom, 20)
                         
                         // Login Form
                         VStack(spacing: 16) {

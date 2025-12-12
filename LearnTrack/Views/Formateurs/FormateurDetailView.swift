@@ -12,6 +12,7 @@ struct FormateurDetailView: View {
     @ObservedObject var viewModel: FormateursViewModel
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
+    @State private var showingCopyConfirmation = false
     
     var body: some View {
         ScrollView {
@@ -38,7 +39,7 @@ struct FormateurDetailView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
                 // Contact Actions
-                if formateur.telephone != nil {
+                if formateur.telephone != nil || !formateur.email.isEmpty {
                     VStack(spacing: 12) {
                         if let telephone = formateur.telephone {
                             ContactActionButton(
@@ -46,9 +47,7 @@ struct FormateurDetailView: View {
                                 title: "Call",
                                 color: .green,
                                 action: {
-                                    if let url = URL(string: "tel://\(telephone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))") {
-                                        UIApplication.shared.open(url)
-                                    }
+                                    openPhoneApp(phoneNumber: telephone)
                                 }
                             )
                             
@@ -57,9 +56,7 @@ struct FormateurDetailView: View {
                                 title: "SMS",
                                 color: .blue,
                                 action: {
-                                    if let url = URL(string: "sms://\(telephone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: ""))") {
-                                        UIApplication.shared.open(url)
-                                    }
+                                    openSMSApp(phoneNumber: telephone)
                                 }
                             )
                         }
@@ -69,9 +66,7 @@ struct FormateurDetailView: View {
                             title: "Email",
                             color: .blue,
                             action: {
-                                if let url = URL(string: "mailto:\(formateur.email)") {
-                                    UIApplication.shared.open(url)
-                                }
+                                openEmailApp(email: formateur.email)
                             }
                         )
                     }
@@ -149,18 +144,32 @@ struct FormateurDetailView: View {
                     Button(action: {
                         showingEdit = true
                     }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label("Modifier", systemImage: "pencil")
+                    }
+                    
+                    Button(action: {
+                        // Copier dans le presse-papier (SHARE-05)
+                        let text = formateurShareText()
+                        ClipboardManager.shared.copyToClipboard(text)
+                        showingCopyConfirmation = true
+                    }) {
+                        Label("Copier", systemImage: "doc.on.doc")
                     }
                     
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
-                        Label("Delete", systemImage: "trash")
+                        Label("Supprimer", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
             }
+        }
+        .alert("Copié !", isPresented: $showingCopyConfirmation) {
+            Button("OK") { }
+        } message: {
+            Text("Les informations du formateur ont été copiées dans le presse-papier")
         }
         .sheet(isPresented: $showingEdit) {
             FormateurFormView(viewModel: viewModel, formateur: formateur)
@@ -175,6 +184,145 @@ struct FormateurDetailView: View {
         } message: {
             Text("Are you sure you want to delete this formateur? This action cannot be undone.")
         }
+    }
+    
+    private func openPhoneApp(phoneNumber: String) {
+        // Nettoyer le numéro de téléphone (enlever espaces, tirets, parenthèses, points)
+        var cleanedNumber = phoneNumber
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: "+", with: "")
+        
+        // Si le numéro commence par 0, le remplacer par l'indicatif français +33
+        if cleanedNumber.hasPrefix("0") {
+            cleanedNumber = "+33" + String(cleanedNumber.dropFirst())
+        }
+        
+        // Encoder le numéro pour l'URL
+        guard let encodedNumber = cleanedNumber.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("❌ Failed to encode phone number: \(phoneNumber)")
+            return
+        }
+        
+        // Créer l'URL tel:// pour ouvrir l'app téléphone
+        guard let url = URL(string: "tel://\(encodedNumber)") else {
+            print("❌ Failed to create URL for phone number: \(phoneNumber)")
+            return
+        }
+        
+        // Vérifier si l'URL peut être ouverte
+        guard UIApplication.shared.canOpenURL(url) else {
+            print("❌ Cannot open tel:// URL. This might not work on simulator.")
+            return
+        }
+        
+        // Ouvrir l'URL
+        UIApplication.shared.open(url, options: [:]) { success in
+            if !success {
+                print("❌ Failed to open phone app for: \(phoneNumber)")
+            }
+        }
+    }
+    
+    private func openSMSApp(phoneNumber: String) {
+        // Nettoyer le numéro de téléphone
+        var cleanedNumber = phoneNumber
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: "+", with: "")
+        
+        // Si le numéro commence par 0, le remplacer par l'indicatif français +33
+        if cleanedNumber.hasPrefix("0") {
+            cleanedNumber = "+33" + String(cleanedNumber.dropFirst())
+        }
+        
+        // Encoder le numéro pour l'URL
+        guard let encodedNumber = cleanedNumber.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("❌ Failed to encode phone number for SMS: \(phoneNumber)")
+            return
+        }
+        
+        // Créer l'URL sms:// pour ouvrir l'app Messages
+        guard let url = URL(string: "sms://\(encodedNumber)") else {
+            print("❌ Failed to create SMS URL for: \(phoneNumber)")
+            return
+        }
+        
+        // Vérifier si l'URL peut être ouverte
+        guard UIApplication.shared.canOpenURL(url) else {
+            print("❌ Cannot open sms:// URL. This might not work on simulator.")
+            return
+        }
+        
+        // Ouvrir l'URL
+        UIApplication.shared.open(url, options: [:]) { success in
+            if !success {
+                print("❌ Failed to open SMS app for: \(phoneNumber)")
+            }
+        }
+    }
+    
+    private func openEmailApp(email: String) {
+        // Nettoyer et encoder l'email pour l'URL
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedEmail.isEmpty else {
+            print("❌ Email is empty")
+            return
+        }
+        
+        // Encoder l'email pour l'URL
+        guard let encodedEmail = trimmedEmail.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("❌ Failed to encode email: \(email)")
+            return
+        }
+        
+        // Créer l'URL mailto: pour ouvrir l'app Mail
+        guard let url = URL(string: "mailto:\(encodedEmail)") else {
+            print("❌ Failed to create mailto URL for: \(email)")
+            return
+        }
+        
+        // Vérifier si l'URL peut être ouverte
+        guard UIApplication.shared.canOpenURL(url) else {
+            print("❌ Cannot open mailto: URL. This might not work on simulator.")
+            return
+        }
+        
+        // Ouvrir l'URL
+        UIApplication.shared.open(url, options: [:]) { success in
+            if !success {
+                print("❌ Failed to open email app for: \(email)")
+            }
+        }
+    }
+    
+    private func formateurShareText() -> String {
+        var text = "👨‍🏫 \(formateur.fullName)\n\n"
+        text += "\(AppEmojis.email) Email: \(formateur.email)\n"
+        if let telephone = formateur.telephone {
+            text += "\(AppEmojis.phone) Téléphone: \(telephone)\n"
+        }
+        if let specialites = formateur.specialites, !specialites.isEmpty {
+            text += "🎯 Spécialités: \(specialites.joined(separator: ", "))\n"
+        }
+        if let tarif = formateur.tarifJournalier {
+            text += "\(AppEmojis.money) Tarif journalier: \(String(format: "%.2f €", tarif))\n"
+        }
+        if let adresse = formateur.adresse {
+            text += "\(AppEmojis.location) Adresse: \(adresse)"
+            if let ville = formateur.ville {
+                text += ", \(ville)"
+            }
+            text += "\n"
+        }
+        return text
     }
 }
 

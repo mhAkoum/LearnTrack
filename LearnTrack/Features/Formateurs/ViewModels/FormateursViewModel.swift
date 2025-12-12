@@ -15,8 +15,34 @@ class FormateursViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var searchText = ""
+    @Published var selectedFilter: FilterType?
     
     private let apiService = APIService.shared
+    
+    enum FilterType: String, CaseIterable {
+        case tous = "tous"
+        case actifs = "actifs"
+        case inactifs = "inactifs"
+        case avecSpecialites = "avec_specialites"
+        
+        var title: String {
+            switch self {
+            case .tous: return "Tous"
+            case .actifs: return "Actifs"
+            case .inactifs: return "Inactifs"
+            case .avecSpecialites: return "Avec spécialités"
+            }
+        }
+        
+        var emoji: String {
+            switch self {
+            case .tous: return "🔍"
+            case .actifs: return "✅"
+            case .inactifs: return "❌"
+            case .avecSpecialites: return "🎯"
+            }
+        }
+    }
     
     var filteredFormateurs: [Formateur] {
         var result = formateurs
@@ -27,7 +53,25 @@ class FormateursViewModel: ObservableObject {
                 formateur.fullName.localizedCaseInsensitiveContains(searchText) ||
                 formateur.nom.localizedCaseInsensitiveContains(searchText) ||
                 formateur.prenom.localizedCaseInsensitiveContains(searchText) ||
-                formateur.email.localizedCaseInsensitiveContains(searchText)
+                formateur.email.localizedCaseInsensitiveContains(searchText) ||
+                (formateur.specialites?.joined(separator: " ").localizedCaseInsensitiveContains(searchText) ?? false)
+            }
+        }
+        
+        // Apply selected filter
+        if let filter = selectedFilter {
+            switch filter {
+            case .tous:
+                break
+            case .actifs:
+                result = result.filter { $0.actif }
+            case .inactifs:
+                result = result.filter { !$0.actif }
+            case .avecSpecialites:
+                result = result.filter { formateur in
+                    guard let specialites = formateur.specialites else { return false }
+                    return !specialites.isEmpty
+                }
             }
         }
         

@@ -13,6 +13,10 @@ struct SessionDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
     @State private var showingShareSheet = false
+    @State private var showingCopyConfirmation = false
+    @State private var ecoleName: String? = nil
+    @State private var clientName: String? = nil
+    @State private var formateurName: String? = nil
     
     var body: some View {
         ScrollView {
@@ -55,6 +59,32 @@ struct SessionDetailView: View {
                         DetailRow(icon: "clock", title: "Heure de fin", value: heureFin)
                     }
                     
+                    // Formateur
+                    if let formateurName = formateurName {
+                        DetailRow(icon: "person.fill", title: "Formateur", value: formateurName)
+                    } else if let formateurId = session.formateurId {
+                        DetailRow(icon: "person.fill", title: "Formateur", value: "ID \(formateurId)")
+                    }
+                    
+                    // Présentiel/Distanciel
+                    if let presentielDistanciel = session.presentielDistancielDisplay {
+                        HStack(alignment: .top, spacing: 12) {
+                            Text(session.presentielEmoji)
+                                .font(.title3)
+                                .frame(width: 20)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Mode")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text(presentielDistanciel)
+                                    .font(.body)
+                            }
+                            
+                            Spacer()
+                        }
+                    }
+                    
                     if let nbParticipants = session.nbParticipants {
                         DetailRow(icon: "person.2", title: "Participants", value: "\(nbParticipants)")
                     }
@@ -85,27 +115,62 @@ struct SessionDetailView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Session")
+        .navigationTitle("\(AppEmojis.sessions) Session")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Charger les noms de l'école, du client et du formateur si disponibles
+            if let ecoleId = session.ecoleId {
+                do {
+                    let ecole = try await APIService.shared.getEcole(id: ecoleId)
+                    ecoleName = ecole.nom
+                } catch {
+                    // Ignore error, will show ID instead
+                }
+            }
+            if let clientId = session.clientId {
+                do {
+                    let client = try await APIService.shared.getClient(id: clientId)
+                    clientName = client.nom
+                } catch {
+                    // Ignore error, will show ID instead
+                }
+            }
+            if let formateurId = session.formateurId {
+                do {
+                    let formateur = try await APIService.shared.getFormateur(id: formateurId)
+                    formateurName = formateur.fullName
+                } catch {
+                    // Ignore error, will show ID instead
+                }
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button(action: {
                         showingEdit = true
                     }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label("Modifier", systemImage: "pencil")
+                    }
+                    
+                    Button(action: {
+                        // Copier dans le presse-papier (SHARE-05)
+                        ClipboardManager.shared.copyToClipboard(sessionShareText())
+                        showingCopyConfirmation = true
+                    }) {
+                        Label("Copier", systemImage: "doc.on.doc")
                     }
                     
                     Button(action: {
                         showingShareSheet = true
                     }) {
-                        Label("Share", systemImage: "square.and.arrow.up")
+                        Label("Partager", systemImage: "square.and.arrow.up")
                     }
                     
                     Button(role: .destructive, action: {
                         showingDeleteAlert = true
                     }) {
-                        Label("Delete", systemImage: "trash")
+                        Label("Supprimer", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -117,6 +182,11 @@ struct SessionDetailView: View {
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(activityItems: [sessionShareText()])
+        }
+        .alert("Copié !", isPresented: $showingCopyConfirmation) {
+            Button("OK") { }
+        } message: {
+            Text("Les informations de la session ont été copiées dans le presse-papier")
         }
         .alert("Delete Session", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -131,15 +201,36 @@ struct SessionDetailView: View {
     }
     
     private func sessionShareText() -> String {
-        var text = "Session: \(session.titre)\n"
-        text += "Date: \(session.formattedDateDebut) - \(session.formattedDateFin)\n"
-        text += "Statut: \(session.statut)\n"
+        var text = "📅 \(session.titre)\n\n"
+        
+        // Date
+        text += "📆 Date: \(session.formattedDateDebut)"
+        if session.formattedDateDebut != session.formattedDateFin {
+            text += " - \(session.formattedDateFin)"
+        }
+        text += "\n"
+        
+        // Heures si disponibles
+        if let heureDebut = session.heureDebut, let heureFin = session.heureFin {
+            text += "🕐 Heures: \(heureDebut) - \(heureFin)\n"
+        }
+        
+        // Lieu (nom de l'école si disponible)
+        if let ecoleName = ecoleName {
+            text += "📍 Lieu: \(ecoleName)\n"
+        } else if let ecoleId = session.ecoleId {
+            text += "📍 Lieu: École ID \(ecoleId)\n"
+        } else {
+            text += "📍 Lieu: À définir\n"
+        }
+        
+        // Tarifs
         if let prix = session.prix {
-            text += "Prix: \(String(format: "%.2f €", prix))\n"
+            text += "💰 Tarif: \(String(format: "%.2f €", prix))\n"
+        } else {
+            text += "💰 Tarif: Non défini\n"
         }
-        if let notes = session.notes {
-            text += "Notes: \(notes)"
-        }
+        
         return text
     }
 }
@@ -201,7 +292,8 @@ struct ShareSheet: UIViewControllerRepresentable {
                 nbParticipants: 10,
                 statut: "planifié",
                 prix: 500.0,
-                notes: "Session importante"
+                notes: "Session importante",
+                presentielDistanciel: "P"
             ),
             viewModel: SessionsViewModel()
         )
