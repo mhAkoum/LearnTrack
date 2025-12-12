@@ -19,32 +19,29 @@ struct ProfilView: View {
                 if let user = authViewModel.currentUser {
                     Section {
                         UserInfoRow(
-                            emoji: "👤",
+                            icon: AppIcons.person,
                             title: "Nom",
                             value: user.fullName,
                             color: AppColors.profil
                         )
                         
                         UserInfoRow(
-                            emoji: AppEmojis.email,
+                            icon: AppIcons.email,
                             title: "Email",
                             value: user.email,
                             color: AppColors.info
                         )
                         
                         UserInfoRow(
-                            emoji: "🔑",
+                            icon: "key.fill",
                             title: "Rôle",
                             value: user.role.capitalized,
                             color: user.isAdmin ? AppColors.accent : AppColors.primary
                         )
                     } header: {
-                        HStack {
-                            Text("👤")
-                            Text("Informations utilisateur")
-                        }
-                        .font(.headline)
-                        .foregroundColor(AppColors.profil)
+                        Label("Informations utilisateur", systemImage: AppIcons.person)
+                            .font(.headline)
+                            .foregroundColor(AppColors.profil)
                     }
                 }
                 
@@ -52,8 +49,9 @@ struct ProfilView: View {
                 Section {
                     Toggle(isOn: $settingsViewModel.isDarkMode) {
                         HStack {
-                            Text(settingsViewModel.isDarkMode ? "🌙" : "☀️")
+                            Image(systemName: settingsViewModel.isDarkMode ? "moon.fill" : "sun.max.fill")
                                 .font(.title3)
+                                .foregroundColor(settingsViewModel.isDarkMode ? AppColors.primary : .orange)
                                 .frame(width: 30)
                             Text("Mode sombre")
                                 .fontWeight(.medium)
@@ -64,20 +62,18 @@ struct ProfilView: View {
                         // Le thème sera appliqué via l'environnement
                     }
                 } header: {
-                    HStack {
-                        Text("🎨")
-                        Text("Préférences d'affichage")
-                    }
-                    .font(.headline)
-                    .foregroundColor(AppColors.primary)
+                    Label("Préférences d'affichage", systemImage: "paintpalette.fill")
+                        .font(.headline)
+                        .foregroundColor(AppColors.primary)
                 }
                 
                 // Section: Gestion des notifications
                 Section {
                     Toggle(isOn: $settingsViewModel.notificationsEnabled) {
                         HStack {
-                            Text("🔔")
+                            Image(systemName: "bell.fill")
                                 .font(.title3)
+                                .foregroundColor(AppColors.accent)
                                 .frame(width: 30)
                             Text("Notifications")
                                 .fontWeight(.medium)
@@ -90,8 +86,9 @@ struct ProfilView: View {
                             settingsViewModel.openAppSettings()
                         }) {
                             HStack {
-                                Text("⚙️")
+                                Image(systemName: AppIcons.settings)
                                     .font(.title3)
+                                    .foregroundColor(AppColors.accent)
                                     .frame(width: 30)
                                 Text("Ouvrir les paramètres")
                                     .foregroundColor(AppColors.accent)
@@ -100,16 +97,14 @@ struct ProfilView: View {
                         }
                     }
                 } header: {
-                    HStack {
-                        Text("🔔")
-                        Text("Gestion des notifications")
-                    }
-                    .font(.headline)
-                    .foregroundColor(AppColors.accent)
+                    Label("Gestion des notifications", systemImage: "bell.fill")
+                        .font(.headline)
+                        .foregroundColor(AppColors.accent)
                 } footer: {
                     if settingsViewModel.notificationPermissionStatus == .denied {
-                        HStack {
-                            Text("⚠️")
+                        HStack(spacing: 6) {
+                            Image(systemName: AppIcons.warning)
+                                .font(.caption)
                             Text("Les notifications sont désactivées. Activez-les dans les paramètres de l'appareil.")
                         }
                         .font(.caption)
@@ -119,8 +114,9 @@ struct ProfilView: View {
                 // Section: À propos
                 Section {
                     HStack {
-                        Text("ℹ️")
+                        Image(systemName: AppIcons.info)
                             .font(.title3)
+                            .foregroundColor(AppColors.info)
                             .frame(width: 30)
                         Text("Version")
                             .fontWeight(.medium)
@@ -131,8 +127,9 @@ struct ProfilView: View {
                     }
                     
                     HStack {
-                        Text("📱")
+                        Image(systemName: "iphone")
                             .font(.title3)
+                            .foregroundColor(.primary)
                             .frame(width: 30)
                         Text("LearnTrack")
                             .fontWeight(.medium)
@@ -141,12 +138,9 @@ struct ProfilView: View {
                             .foregroundColor(.secondary)
                     }
                 } header: {
-                    HStack {
-                        Text("ℹ️")
-                        Text("À propos de l'application")
-                    }
-                    .font(.headline)
-                    .foregroundColor(AppColors.info)
+                    Label("À propos de l'application", systemImage: AppIcons.info)
+                        .font(.headline)
+                        .foregroundColor(AppColors.info)
                 }
                 
                 // Section: Déconnexion
@@ -155,7 +149,7 @@ struct ProfilView: View {
                         showingLogoutAlert = true
                     }) {
                         HStack {
-                            Text(AppEmojis.logout)
+                            Image(systemName: AppIcons.logout)
                                 .font(.title3)
                                 .frame(width: 30)
                             Text("Déconnexion")
@@ -164,7 +158,7 @@ struct ProfilView: View {
                     }
                 }
             }
-            .navigationTitle("\(AppEmojis.profil) Profil")
+            .navigationTitle("Profil")
             .alert("Déconnexion", isPresented: $showingLogoutAlert) {
                 Button("Annuler", role: .cancel) { }
                 Button("Déconnexion", role: .destructive) {
@@ -181,7 +175,7 @@ struct ProfilView: View {
 
 // MARK: - User Info Row
 struct UserInfoRow: View {
-    let emoji: String
+    let icon: String
     let title: String
     let value: String
     let color: Color
@@ -192,8 +186,9 @@ struct UserInfoRow: View {
                 Circle()
                     .fill(color.opacity(0.2))
                     .frame(width: 36, height: 36)
-                Text(emoji)
+                Image(systemName: icon)
                     .font(.title3)
+                    .foregroundColor(color)
             }
             
             Text(title)
